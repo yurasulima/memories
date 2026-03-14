@@ -3,7 +3,7 @@
     <div class="auth-card">
       <div class="auth-logo">
         <IconHeart :size="32" :filled="true" />
-        <h1>memories</h1>
+        <h1>Memories</h1>
       </div>
 
       <div class="auth-tabs">

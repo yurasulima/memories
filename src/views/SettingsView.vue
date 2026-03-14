@@ -12,7 +12,7 @@
           <div class="profile-info">
             <span class="profile-name">{{ auth.user?.fullName }}</span>
             <span class="profile-email">{{ auth.user?.email }}</span>
-            <span class="profile-username">Кратка профіля в розробці</span>
+            <span class="profile-username">Картка профіля в розробці</span>
           </div>
         </div>
       </div>
