@@ -65,10 +65,11 @@
         </div>
         <div v-if="showAddContent" class="add-form">
           <select v-model="newContent.type" class="input">
+            <option value="CARTOON">Мультик</option>
             <option value="ANIME">Аніме</option>
-            <option value="HENTAI">Хентай</option>
             <option value="SERIES">Серіал</option>
             <option value="FILM">Фільм</option>
+            <option value="HENTAI">Хентай</option>
           </select>
           <input v-model="newContent.name" class="input" placeholder="Назва" />
           <div class="row-inputs">

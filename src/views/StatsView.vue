@@ -206,7 +206,7 @@ const load = async () => {
 }
 
 const contentLabel = (type) =>
-    ({ ANIME: 'Аніме', HENTAI: 'Хентай', SERIES: 'Серіал', FILM: 'Фільм' }[type] || type)
+    ({ ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай' }[type] || type)
 
 const barWidth = (val, obj) => {
   const max = Math.max(...Object.values(obj))

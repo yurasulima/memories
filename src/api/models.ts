@@ -1,6 +1,6 @@
 export type MemoriesVisibility = 'GROUP' | 'PRIVATE'
 
-export type MemoriesContentType = 'ANIME' | 'HENTAI' | 'SERIES' | 'FILM'
+export type MemoriesContentType = 'CARTOON' | 'ANIME' | 'HENTAI' | 'SERIES' | 'FILM'
 
 export interface MediaResponse {
   id: number

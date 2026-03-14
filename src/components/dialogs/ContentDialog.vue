@@ -46,10 +46,11 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'added'])
 
 const contentTypes = [
+  { value: 'CARTOON', label: 'Мультик' },
   { value: 'ANIME', label: 'Аніме' },
-  { value: 'HENTAI', label: 'Хентай' },
   { value: 'SERIES', label: 'Серіал' },
-  { value: 'FILM', label: 'Фільм' }
+  { value: 'FILM', label: 'Фільм' },
+  { value: 'HENTAI', label: 'Хентай' }
 ]
 
 const form = reactive({ type: 'ANIME', name: '', watchedSeries: null, season: null })

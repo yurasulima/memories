@@ -324,8 +324,8 @@ const createGroup = async ({ name, partner }) => {
   } finally { createLoading.value = false }
 }
 
-const contentLabel   = (type) => ({ ANIME: 'Аніме', HENTAI: 'Хентай', SERIES: 'Серіал', FILM: 'Фільм' }[type] || type)
-const ctypeClass     = (type) => ({ ANIME: 'anime', HENTAI: 'hentai', SERIES: 'series', FILM: 'film' }[type] || '')
+const contentLabel   = (type) => ({ ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай' }[type] || type)
+const ctypeClass     = (type) => ({ ANIME: 'anime', CARTOON: 'hentai', SERIES: 'series', FILM: 'film', HENTAI: 'hentai' }[type] || '')
 const getYear        = (d) => new Date(d).getFullYear()
 const getDay         = (d) => new Date(d).getDate()
 const getMonth       = (d) => new Date(d).toLocaleDateString('uk-UA', { month: 'short' })
