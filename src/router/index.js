@@ -13,7 +13,7 @@ const router = createRouter({
       meta: { public: true }
     },
 
-    { path: '/',     name: 'landing', component: LandingView },
+    { path: '/', name: 'landing', component: import('../views/LandingView.vue') },
     {
       path: '/app',
       component: () => import('../views/AppLayout.vue'),
