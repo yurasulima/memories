@@ -8,6 +8,7 @@
             <span>Додати контент</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)"><IconClose :size="18" /></button>
           </div>
+          <!-- заміни цю частину -->
           <div class="sheet-body">
             <div class="type-tabs">
               <button
@@ -16,11 +17,18 @@
                   @click="form.type = t.value"
               >{{ t.label }}</button>
             </div>
+
             <input v-model="form.name" class="sheet-input" placeholder="Назва" />
-            <div class="sheet-row-2">
+
+            <div class="sheet-row-2" v-if="form.type !== 'FILM'">
               <input v-model.number="form.watchedSeries" class="sheet-input" type="number" placeholder="Серія" />
               <input v-model.number="form.season" class="sheet-input" type="number" placeholder="Сезон" />
             </div>
+
+            <!-- підказка -->
+            <p class="sheet-tip">
+              {{ form.type === 'FILM' ? 'Серія та сезон не потрібні для фільму' : 'Серію та сезон можна вказати за бажанням' }}
+            </p>
           </div>
           <div class="sheet-footer">
             <button class="btn-accent full" @click="submit" :disabled="!form.name || loading">
@@ -69,11 +77,27 @@ const submit = async () => {
     emit('update:modelValue', false)
   } finally { loading.value = false }
 }
+
+watch(() => form.type, (newType) => {
+  if (newType === 'FILM') {
+    form.watchedSeries = null
+    form.season = null
+  }
+})
 </script>
 
 <style scoped>
+
+.sheet-tip {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+  transition: color 0.2s;
+}
 .sheet-overlay { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); z-index: 200; }
-.sheet { background: #ffffff; border-radius: 28px 28px 0 0; width: 100%; max-width: 520px; padding: 0 0 calc(20px + env(safe-area-inset-bottom)); max-height: 90vh; }
+.sheet {
+  background: var(--bg-card, #808080); border-radius: 28px 28px 0 0; width: 100%; max-width: 520px; padding: 0 0 calc(20px + env(safe-area-inset-bottom)); max-height: 90vh; }
 .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
 .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; font-size: 16px; font-weight: 700; }
 .sheet-close { color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--bg-secondary); transition: background 0.15s; }

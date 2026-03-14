@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import LandingView from "@/views/LandingView.vue";
+import HomeView from "@/views/HomeView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,14 +12,16 @@ const router = createRouter({
       component: () => import('../views/AuthView.vue'),
       meta: { public: true }
     },
+
+    { path: '/',     name: 'landing', component: LandingView },
     {
-      path: '/',
+      path: '/app',
       component: () => import('../views/AppLayout.vue'),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
-          name: 'home',
+          name: 'app',
           component: () => import('../views/HomeView.vue')
         },
         {
@@ -47,7 +51,7 @@ router.beforeEach((to) => {
     return { name: 'auth' }
   }
   if (to.name === 'auth' && auth.isAuthenticated) {
-    return { name: 'home' }
+    return { name: 'app' }
   }
 })
 

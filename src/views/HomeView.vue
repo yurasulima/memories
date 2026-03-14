@@ -43,7 +43,7 @@
         <IconPlus :size="22" />
       </button>
 
-      <!-- LOADER -->
+      <!-- INITIAL LOADER -->
       <div v-if="loading && displayDays.length === 0" class="loader-wrap">
         <div class="spinner"></div>
       </div>
@@ -154,13 +154,18 @@
           </div>
         </template>
 
-        <!-- Load more — тільки коли не в режимі пошуку -->
-        <div v-if="!searchQuery && hasMore" class="load-more-wrap">
-          <button class="load-more-btn" @click="loadMore" :disabled="loading">
-            <span v-if="loading" class="spinner-sm"></span>
-            <span v-else>Завантажити ще</span>
-          </button>
+        <!-- PAGINATION LOADING INDICATOR (dots) -->
+        <div v-if="loading && displayDays.length > 0" class="load-more-indicator">
+          <div class="lmi-dot"></div>
+          <div class="lmi-dot"></div>
+          <div class="lmi-dot"></div>
         </div>
+
+        <!-- END OF LIST -->
+        <div v-if="!hasMore && !loading && !searchQuery && days.length > 0" class="end-of-list">
+          <span>✨ Це всі спогади</span>
+        </div>
+
       </div>
     </div>
 
@@ -186,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGroupsStore } from '../stores/group.js'
 import { memoriesApi } from '../api/memories.js'
 import IconHeart from '../components/icons/IconHeart.vue'
@@ -221,9 +226,39 @@ const searchResults = ref([])
 const searchLoading = ref(false)
 let searchTimeout = null
 
-// Показуємо результати пошуку або звичайний список
+// ── Infinite scroll via window ──────────────────────────────────────────────
+const handleScroll = () => {
+  // Не пагінуємо під час пошуку або якщо вже завантажуємо
+  if (loading.value || !hasMore.value || searchQuery.value) return
+
+  const scrollY = window.scrollY
+  const windowH = window.innerHeight
+  const docH = document.documentElement.scrollHeight
+
+  // Тригер за 250px до кінця сторінки
+  if (scrollY + windowH >= docH - 250) {
+    loadMore()
+  }
+}
+
+onMounted(async () => {
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  await groupsStore.fetchMyGroups()
+  if (groupsStore.currentGroup) {
+    selectedGroupId.value = groupsStore.currentGroup.id
+    await loadDays()
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  clearTimeout(searchTimeout)
+})
+
+// ── Computed ─────────────────────────────────────────────────────────────────
 const displayDays = computed(() => searchQuery.value ? searchResults.value : days.value)
 
+// ── Search ───────────────────────────────────────────────────────────────────
 const onSearchInput = () => {
   clearTimeout(searchTimeout)
   if (!searchQuery.value.trim()) {
@@ -254,7 +289,6 @@ const clearSearch = () => {
   clearTimeout(searchTimeout)
 }
 
-// Підсвічування тексту в результатах пошуку
 const highlight = (text) => {
   if (!searchQuery.value || !text) return text
   const escaped = searchQuery.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -267,34 +301,47 @@ const pluralDays = (n) => {
   return 'днів'
 }
 
+// ── Dialogs ───────────────────────────────────────────────────────────────────
 const openDialog = (type, day) => { dialogTargetDay.value = day; dialogs.value[type] = true }
 
-const onPosted = (post) => { if (!dialogTargetDay.value.posts) dialogTargetDay.value.posts = []; dialogTargetDay.value.posts.unshift(post) }
-const onContentAdded = (c) => { if (!dialogTargetDay.value.contents) dialogTargetDay.value.contents = []; dialogTargetDay.value.contents.push(c) }
-const onDateAdded = (d) => { if (!dialogTargetDay.value.dates) dialogTargetDay.value.dates = []; dialogTargetDay.value.dates.push(d) }
+const onPosted      = (post) => { if (!dialogTargetDay.value.posts)    dialogTargetDay.value.posts    = []; dialogTargetDay.value.posts.unshift(post) }
+const onContentAdded = (c)   => { if (!dialogTargetDay.value.contents) dialogTargetDay.value.contents = []; dialogTargetDay.value.contents.push(c) }
+const onDateAdded    = (d)   => { if (!dialogTargetDay.value.dates)    dialogTargetDay.value.dates    = []; dialogTargetDay.value.dates.push(d) }
 
+// ── Delete ────────────────────────────────────────────────────────────────────
 const confirmDeleteDay = (id) => { pendingDeleteId.value = id; showConfirmDelete.value = true }
 const deleteDay = async () => {
   await memoriesApi.deleteDay(pendingDeleteId.value)
   days.value = days.value.filter(d => d.id !== pendingDeleteId.value)
   searchResults.value = searchResults.value.filter(d => d.id !== pendingDeleteId.value)
-  showConfirmDelete.value = false; pendingDeleteId.value = null
+  showConfirmDelete.value = false
+  pendingDeleteId.value = null
 }
-const deleteDate    = async (day, id) => { await memoriesApi.deleteDate(id);   day.dates    = day.dates.filter(d => d.id !== id) }
+const deleteDate    = async (day, id) => { await memoriesApi.deleteDate(id);    day.dates    = day.dates.filter(d => d.id !== id) }
 const deleteContent = async (day, id) => { await memoriesApi.deleteContent(id); day.contents = day.contents.filter(c => c.id !== id) }
-const deletePost    = async (day, id) => { await memoriesApi.deletePost(id);   day.posts    = day.posts.filter(p => p.id !== id) }
+const deletePost    = async (day, id) => { await memoriesApi.deletePost(id);    day.posts    = day.posts.filter(p => p.id !== id) }
 
-onMounted(async () => {
-  await groupsStore.fetchMyGroups()
-  if (groupsStore.currentGroup) { selectedGroupId.value = groupsStore.currentGroup.id; await loadDays() }
-})
+// ── Data loading ──────────────────────────────────────────────────────────────
 watch(() => groupsStore.currentGroup, async (g) => {
-  if (g) { selectedGroupId.value = g.id; days.value = []; page.value = 0; hasMore.value = true; clearSearch(); await loadDays() }
+  if (g) {
+    selectedGroupId.value = g.id
+    days.value = []
+    page.value = 0
+    hasMore.value = true
+    clearSearch()
+    await loadDays()
+  }
 })
+
 const onGroupChange = async () => {
   await groupsStore.fetchGroupById(selectedGroupId.value)
-  days.value = []; page.value = 0; hasMore.value = true; clearSearch(); await loadDays()
+  days.value = []
+  page.value = 0
+  hasMore.value = true
+  clearSearch()
+  await loadDays()
 }
+
 const loadDays = async () => {
   if (!groupsStore.currentGroup || loading.value) return
   loading.value = true
@@ -304,26 +351,43 @@ const loadDays = async () => {
     const full = await Promise.all(items.map(d => memoriesApi.getDayById(d.id)))
     days.value.push(...full)
     hasMore.value = items.length === 10
-  } finally { loading.value = false }
+  } finally {
+    loading.value = false
+  }
 }
-const loadMore = async () => { page.value++; await loadDays() }
+
+const loadMore = async () => {
+  page.value++
+  await loadDays()
+}
+
 const createDay = async (date) => {
   if (!groupsStore.currentGroup) return
   createLoading.value = true
   try {
     const created = await memoriesApi.createDay({ groupId: groupsStore.currentGroup.id, date })
     const full = await memoriesApi.getDayById(created.id)
-    days.value.unshift(full); showCreateDay.value = false
-  } finally { createLoading.value = false }
+    days.value.unshift(full)
+    showCreateDay.value = false
+  } finally {
+    createLoading.value = false
+  }
 }
+
 const createGroup = async ({ name, partner }) => {
   createLoading.value = true
   try {
     await groupsStore.createGroup({ name, memberIds: [partner.id] })
-    showCreateGroup.value = false; days.value = []; page.value = 0; await loadDays()
-  } finally { createLoading.value = false }
+    showCreateGroup.value = false
+    days.value = []
+    page.value = 0
+    await loadDays()
+  } finally {
+    createLoading.value = false
+  }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const contentLabel   = (type) => ({ ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай' }[type] || type)
 const ctypeClass     = (type) => ({ ANIME: 'anime', CARTOON: 'hentai', SERIES: 'series', FILM: 'film', HENTAI: 'hentai' }[type] || '')
 const getYear        = (d) => new Date(d).getFullYear()
@@ -389,7 +453,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
   color: var(--text-muted);
   font-weight: 600;
   padding: 4px 4px 8px;
-  letter-spacing: 0.3px;
+  letter-spacing: 1px;
 }
 
 /* ── FAB ── */
@@ -417,7 +481,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .spine-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--accent); flex-shrink: 0; z-index: 1; }
 .spine-line { width: 2px; flex: 1; background: linear-gradient(to bottom, var(--accent) 0%, var(--border) 100%); margin-top: 6px; opacity: 0.4; }
 .day-content { display: flex; flex-direction: column; min-width: 0; }
-.day-header-card { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 0 10px 0 14px; margin-bottom: 6px; }
+.day-header-card { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 0 4px 0 12px; margin-bottom: 6px; }
 .card-date-full { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: capitalize; flex: 1; }
 .topbar-delete { color: var(--text-muted); opacity: 0.5; display: flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; border-radius: 10px; transition: opacity 0.15s, color 0.15s, background 0.15s; flex-shrink: 0; }
 .topbar-delete:hover { opacity: 1; color: #e05555; background: rgba(224,85,85,0.08); }
@@ -435,11 +499,42 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .chip-sub { font-size: 10px; color: var(--text-muted); }
 .chip-tag { font-size: 10px; color: var(--accent); font-weight: 700; white-space: nowrap; }
 .content-mini-card { display: flex; align-items: center; gap: 8px; padding: 8px 4px 8px 10px; }
-.ctype { font-size: 10px; font-weight: 700; border-radius: 6px; padding: 2px 7px; letter-spacing: 0.3px; flex-shrink: 0; }
-.ctype.anime  { background: #e8f4ff; color: #1a73e8; }
-.ctype.hentai { background: #fde8f5; color: #c2185b; }
-.ctype.series { background: #e8f5e9; color: #2e7d32; }
-.ctype.film   { background: #fff3e0; color: #e65100; }
+.ctype {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 7px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  color: var(--ctype-text, #000);
+  background: var(--ctype-bg, #eee);
+}
+
+/* Типи контенту */
+.ctype.anime {
+  --ctype-bg: var(--anime-bg, #d0e7ff);
+  --ctype-text: var(--anime-text, #1a73e8);
+}
+
+.ctype.hentai {
+  --ctype-bg: var(--hentai-bg, #f4d0e0);
+  --ctype-text: var(--hentai-text, #c2185b);
+}
+
+.ctype.cartoon {
+  --ctype-bg: var(--cartoon-bg, #f4d0e0);
+  --ctype-text: var(--cartoon-text, #c2185b);
+}
+
+.ctype.series {
+  --ctype-bg: var(--series-bg, #dff0d8);
+  --ctype-text: var(--series-text, #2e7d32);
+}
+
+.ctype.film {
+  --ctype-bg: var(--film-bg, #fff3e0);
+  --ctype-text: var(--film-text, #e65100);
+}
 .content-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .content-meta { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 .post-mini-card { padding: 10px 4px 10px 12px; }

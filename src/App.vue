@@ -104,4 +104,44 @@ body {
   background-color: var(--bg);
   color: var(--text);
 }
+
+
+
+.white, .pastel {
+  --anime-bg: #d0e7ff;
+  --anime-text: #1a73e8;
+
+  --hentai-bg: #f4d0e0;
+  --hentai-text: #c2185b;
+
+  --cartoon-bg: #f4d0e0;
+  --cartoon-text: #c2185b;
+
+  --series-bg: #dff0d8;
+  --series-text: #2e7d32;
+
+  --film-bg: #fff3e0;
+  --film-text: #e65100;
+}
+
+/* Dark themes */
+.dark, .dark-pastel {
+  --anime-bg: #1a2738;
+  --anime-text: #6eb8ff;
+
+  --hentai-bg: #632248;
+  --hentai-text: #ff7abf;
+
+  --cartoon-bg: #632248;
+  --cartoon-text: #ff7abf;
+
+  --series-bg: #223022;
+  --series-text: #81c784;
+
+  --film-bg: #352618;
+  --film-text: #ffb74d;
+}
+
+
+
 </style>
