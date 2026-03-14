@@ -5,8 +5,20 @@
 </template>
 
 <script setup>
+import { watch } from 'vue'
 import { useThemeStore } from './stores/theme.js'
+
 const themeStore = useThemeStore()
+
+// Sync theme class to <body> so teleported dialogs inherit CSS vars
+watch(
+    () => themeStore.theme,
+    (newTheme, oldTheme) => {
+      if (oldTheme) document.body.classList.remove(oldTheme)
+      document.body.classList.add(newTheme)
+    },
+    { immediate: true }
+)
 </script>
 
 <style>
