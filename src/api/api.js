@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  //baseURL: 'http://localhost:8080',
+  baseURL: 'https://api.mblueberry.space',
   headers: {
     'Content-Type': 'application/json'
   }

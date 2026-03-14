@@ -67,6 +67,41 @@
         <IconLogout :size="18"/>
         <span>Вийти</span>
       </button>
+
+
+      <div class="section-card">
+        <h2>Про нас</h2>
+
+        <div class="about-text">
+          <p>
+            Memories — це невеликий проєкт для збереження спільних моментів,
+            фотографій та історій. Ми робимо його для пар та близьких людей,
+            щоб їхні спогади завжди були поруч.
+          </p>
+
+          <p>
+            Якщо вам подобається проєкт — ви можете підтримати його розвиток ❤️
+          </p>
+        </div>
+
+        <div class="support-actions">
+          <a
+              class="support-btn"
+              href="https://send.monobank.ua/jar/b1DegFSYh"
+              target="_blank"
+          >
+            Підтримати (Monobank)
+          </a>
+
+          <a
+              class="contact-btn"
+              href="https://t.me/ImMurMurCat"
+              target="_blank"
+          >
+            Telegram: @ImMurMurCat
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -342,5 +377,47 @@ const logout = () => {
 
 .logout-btn:hover {
   background: rgba(224, 85, 85, 0.18);
+}
+
+
+.about-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.support-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.support-btn {
+  background: #4caf50;
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.support-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.contact-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text);
 }
 </style>
