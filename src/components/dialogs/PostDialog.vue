@@ -112,7 +112,8 @@ const submit = async () => {
 
 /* Sheet uses CSS vars so it respects dark/light theme */
 .sheet {
-  background: var(--bg-card);
+
+  background: var(--bg-card, #808080);
   border-radius: 28px 28px 0 0;
   width: 100%;
   max-width: 520px;

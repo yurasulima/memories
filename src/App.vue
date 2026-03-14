@@ -15,7 +15,7 @@ watch(
     () => themeStore.theme,
     (newTheme, oldTheme) => {
       if (oldTheme) document.body.classList.remove(oldTheme)
-      document.body.classList.add(newTheme)
+      if (newTheme) document.body.classList.add(newTheme)
     },
     { immediate: true }
 )
