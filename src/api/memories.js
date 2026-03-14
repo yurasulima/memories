@@ -15,6 +15,12 @@ export const memoriesApi = {
     })
     return response.data
   },
+  searchDays: async (groupId, q) => {
+    const response = await api.get(`/memories/groups/${groupId}/days/search`, {
+      params: { q }
+    })
+    return response.data
+  },
   deleteDay: async (dayId) => {
     await api.delete(`/memories/days/${dayId}`)
   },

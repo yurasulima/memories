@@ -17,19 +17,19 @@
       <div class="cards-grid">
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalDays }}</span>
-          <span class="stat-label">Днів</span>
+          <span class="stat-label">Всього записів</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalPosts }}</span>
-          <span class="stat-label">Постів</span>
+          <span class="stat-label">Всього постів</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalContents }}</span>
-          <span class="stat-label">Контенту</span>
+          <span class="stat-label">Записів про перегляд контенту</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalMedia }}</span>
-          <span class="stat-label">Медіа</span>
+          <span class="stat-label">Опубліковано фото</span>
         </div>
       </div>
 
@@ -67,7 +67,7 @@
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalPrivatePosts }}</span>
-          <span class="stat-label">Приватних постів</span>
+          <span class="stat-label">Особистих постів</span>
         </div>
       </div>
 

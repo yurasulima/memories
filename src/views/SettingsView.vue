@@ -12,7 +12,7 @@
           <div class="profile-info">
             <span class="profile-name">{{ auth.user?.fullName }}</span>
             <span class="profile-email">{{ auth.user?.email }}</span>
-            <span class="profile-username">@{{ auth.user?.username }}</span>
+            <span class="profile-username">Кратка профіля в розробці</span>
           </div>
         </div>
       </div>
@@ -21,10 +21,10 @@
         <h2>Тема</h2>
         <div class="theme-grid">
           <button
-            v-for="t in themes"
-            :key="t.value"
-            :class="['theme-btn', { active: themeStore.theme === t.value }]"
-            @click="themeStore.setTheme(t.value)"
+              v-for="t in themes"
+              :key="t.value"
+              :class="['theme-btn', { active: themeStore.theme === t.value }]"
+              @click="themeStore.setTheme(t.value)"
           >
             <div class="theme-preview" :class="t.value"></div>
             <span>{{ t.label }}</span>
@@ -45,7 +45,13 @@
             <div v-for="m in groupsStore.currentGroup.members" :key="m.id" class="member-row">
               <div class="member-avatar">{{ m.fullName?.charAt(0) || m.username?.charAt(0) }}</div>
               <div class="member-info">
-                <span class="member-name">{{ m.fullName }}</span>
+                <span class="member-name">
+                  {{
+                    m.fullName
+                        ? m.fullName.split(' ')[0] + ' ' + (m.fullName.split(' ')[1]?.charAt(0) || '') + '.'
+                        : ''
+                  }}
+                </span>
                 <span class="member-username">@{{ m.username }}</span>
               </div>
               <span v-if="m.id === groupsStore.currentGroup.owner?.id" class="owner-badge">власник</span>
@@ -58,7 +64,7 @@
       </div>
 
       <button class="logout-btn" @click="logout">
-        <IconLogout :size="18" />
+        <IconLogout :size="18"/>
         <span>Вийти</span>
       </button>
     </div>
@@ -66,11 +72,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
-import { useThemeStore } from '../stores/theme.js'
-import { useGroupsStore } from '../stores/group.js'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '../stores/auth.js'
+import {useThemeStore} from '../stores/theme.js'
+import {useGroupsStore} from '../stores/group.js'
 import IconLogout from '../components/icons/IconLogout.vue'
 
 const router = useRouter()
@@ -84,10 +90,10 @@ const initials = computed(() => {
 })
 
 const themes = [
-  { value: 'white', label: 'Біла' },
-  { value: 'pastel', label: 'Пастельна' },
-  { value: 'dark', label: 'Чорна' },
-  { value: 'dark-pastel', label: 'Чорна пастельна' }
+  {value: 'white', label: 'Біла'},
+  {value: 'pastel', label: 'Пастельна'},
+  {value: 'dark', label: 'Чорна'},
+  {value: 'dark-pastel', label: 'Чорна пастельна'}
 ]
 
 const logout = () => {
@@ -213,13 +219,24 @@ const logout = () => {
   width: 100%;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.theme-preview.white { background: linear-gradient(135deg, #fff 60%, #f7f7f7); }
-.theme-preview.pastel { background: linear-gradient(135deg, #fff5f8 60%, #ffe8f0); }
-.theme-preview.dark { background: linear-gradient(135deg, #141414 60%, #1e1e1e); }
-.theme-preview.dark-pastel { background: linear-gradient(135deg, #1e1220 60%, #2a1a2e); }
+.theme-preview.white {
+  background: linear-gradient(135deg, #fff 60%, #f7f7f7);
+}
+
+.theme-preview.pastel {
+  background: linear-gradient(135deg, #fff5f8 60%, #ffe8f0);
+}
+
+.theme-preview.dark {
+  background: linear-gradient(135deg, #141414 60%, #1e1e1e);
+}
+
+.theme-preview.dark-pastel {
+  background: linear-gradient(135deg, #1e1220 60%, #2a1a2e);
+}
 
 .group-info {
   display: flex;

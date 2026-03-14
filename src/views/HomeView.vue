@@ -15,6 +15,22 @@
       </div>
     </header>
 
+    <!-- SEARCH BAR -->
+    <div v-if="groupsStore.currentGroup" class="search-bar-wrap">
+      <div class="search-bar" :class="{ active: searchQuery }">
+        <span class="search-bar-icon">🔍</span>
+        <input
+            v-model="searchQuery"
+            class="search-bar-input"
+            placeholder="Пошук постів, контенту, дат..."
+            @input="onSearchInput"
+        />
+        <button v-if="searchQuery" class="search-bar-clear" @click="clearSearch">
+          <IconClose :size="14" />
+        </button>
+      </div>
+    </div>
+
     <!-- NO GROUP -->
     <div v-if="!groupsStore.currentGroup && !groupsStore.loading" class="empty-state">
       <div class="empty-icon">💝</div>
@@ -27,23 +43,44 @@
         <IconPlus :size="22" />
       </button>
 
-      <div v-if="loading && days.length === 0" class="loader-wrap">
+      <!-- LOADER -->
+      <div v-if="loading && displayDays.length === 0" class="loader-wrap">
         <div class="spinner"></div>
       </div>
 
-      <div v-else-if="days.length === 0" class="empty-state">
+      <!-- SEARCH LOADING -->
+      <div v-else-if="searchLoading" class="loader-wrap">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- NO RESULTS -->
+      <div v-else-if="searchQuery && searchResults.length === 0 && !searchLoading" class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p class="empty-title">Нічого не знайдено</p>
+        <p class="empty-sub">Спробуй інший запит</p>
+      </div>
+
+      <!-- EMPTY DAYS -->
+      <div v-else-if="!searchQuery && days.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">📖</div>
         <p class="empty-title">Поки немає спогадів</p>
         <p class="empty-sub">Натисни + щоб додати перший день</p>
       </div>
 
-      <div v-else class="timeline">
-        <template v-for="(day, index) in days" :key="day.id">
+      <!-- TIMELINE -->
+      <div v-else-if="displayDays.length > 0" class="timeline">
+
+        <!-- Search results label -->
+        <div v-if="searchQuery" class="search-results-label">
+          Знайдено: {{ searchResults.length }} {{ pluralDays(searchResults.length) }}
+        </div>
+
+        <template v-for="(day, index) in displayDays" :key="day.id">
           <div v-if="isNewYear(day, index)" class="year-divider">
             <span class="year-text">{{ getYear(day.date) }}</span>
           </div>
 
-          <div class="timeline-row">
+          <div class="timeline-row" :id="`day-${day.id}`">
             <div class="date-stamp">
               <span class="stamp-day">{{ getDay(day.date) }}</span>
               <span class="stamp-month">{{ getMonth(day.date) }}</span>
@@ -95,7 +132,7 @@
                       <IconClose :size="16" />
                     </button>
                   </div>
-                  <p class="bubble-text">{{ post.text }}</p>
+                  <p class="bubble-text" v-html="highlight(post.text)"></p>
                   <div v-if="post.media?.length" class="bubble-media" :class="'cols-' + Math.min(post.media.length, 3)">
                     <div v-for="m in post.media" :key="m.id" class="media-cell" @click="lightboxMedia = m">
                       <img v-if="m.type?.startsWith('image')" :src="m.url" alt="" loading="lazy" />
@@ -117,7 +154,8 @@
           </div>
         </template>
 
-        <div v-if="hasMore" class="load-more-wrap">
+        <!-- Load more — тільки коли не в режимі пошуку -->
+        <div v-if="!searchQuery && hasMore" class="load-more-wrap">
           <button class="load-more-btn" @click="loadMore" :disabled="loading">
             <span v-if="loading" class="spinner-sm"></span>
             <span v-else>Завантажити ще</span>
@@ -148,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useGroupsStore } from '../stores/group.js'
 import { memoriesApi } from '../api/memories.js'
 import IconHeart from '../components/icons/IconHeart.vue'
@@ -177,6 +215,58 @@ const pendingDeleteId = ref(null)
 const dialogs = ref({ post: false, content: false, date: false })
 const dialogTargetDay = ref(null)
 
+// Search
+const searchQuery = ref('')
+const searchResults = ref([])
+const searchLoading = ref(false)
+let searchTimeout = null
+
+// Показуємо результати пошуку або звичайний список
+const displayDays = computed(() => searchQuery.value ? searchResults.value : days.value)
+
+const onSearchInput = () => {
+  clearTimeout(searchTimeout)
+  if (!searchQuery.value.trim()) {
+    searchResults.value = []
+    return
+  }
+  searchTimeout = setTimeout(doSearch, 350)
+}
+
+const doSearch = async () => {
+  if (!groupsStore.currentGroup || !searchQuery.value.trim()) return
+  searchLoading.value = true
+  try {
+    searchResults.value = await memoriesApi.searchDays(
+        groupsStore.currentGroup.id,
+        searchQuery.value.trim()
+    )
+  } catch {
+    searchResults.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchResults.value = []
+  clearTimeout(searchTimeout)
+}
+
+// Підсвічування тексту в результатах пошуку
+const highlight = (text) => {
+  if (!searchQuery.value || !text) return text
+  const escaped = searchQuery.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>')
+}
+
+const pluralDays = (n) => {
+  if (n % 10 === 1 && n % 100 !== 11) return 'день'
+  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'дні'
+  return 'днів'
+}
+
 const openDialog = (type, day) => { dialogTargetDay.value = day; dialogs.value[type] = true }
 
 const onPosted = (post) => { if (!dialogTargetDay.value.posts) dialogTargetDay.value.posts = []; dialogTargetDay.value.posts.unshift(post) }
@@ -187,6 +277,7 @@ const confirmDeleteDay = (id) => { pendingDeleteId.value = id; showConfirmDelete
 const deleteDay = async () => {
   await memoriesApi.deleteDay(pendingDeleteId.value)
   days.value = days.value.filter(d => d.id !== pendingDeleteId.value)
+  searchResults.value = searchResults.value.filter(d => d.id !== pendingDeleteId.value)
   showConfirmDelete.value = false; pendingDeleteId.value = null
 }
 const deleteDate    = async (day, id) => { await memoriesApi.deleteDate(id);   day.dates    = day.dates.filter(d => d.id !== id) }
@@ -198,11 +289,11 @@ onMounted(async () => {
   if (groupsStore.currentGroup) { selectedGroupId.value = groupsStore.currentGroup.id; await loadDays() }
 })
 watch(() => groupsStore.currentGroup, async (g) => {
-  if (g) { selectedGroupId.value = g.id; days.value = []; page.value = 0; hasMore.value = true; await loadDays() }
+  if (g) { selectedGroupId.value = g.id; days.value = []; page.value = 0; hasMore.value = true; clearSearch(); await loadDays() }
 })
 const onGroupChange = async () => {
   await groupsStore.fetchGroupById(selectedGroupId.value)
-  days.value = []; page.value = 0; hasMore.value = true; await loadDays()
+  days.value = []; page.value = 0; hasMore.value = true; clearSearch(); await loadDays()
 }
 const loadDays = async () => {
   if (!groupsStore.currentGroup || loading.value) return
@@ -241,7 +332,7 @@ const getMonth       = (d) => new Date(d).toLocaleDateString('uk-UA', { month: '
 const getWeekday     = (d) => new Date(d).toLocaleDateString('uk-UA', { weekday: 'short' })
 const formatDateFull = (d) => new Date(d).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })
 const formatTime     = (d) => new Date(d).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })
-const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getYear(days.value[index - 1].date)
+const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getYear(displayDays.value[index - 1].date)
 </script>
 
 <style scoped>
@@ -252,8 +343,59 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .home-header h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--accent), var(--accent-hover, var(--accent))); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .group-select { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 13px; color: var(--text); max-width: 130px; outline: none; }
 .group-name { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+/* ── Search bar ── */
+.search-bar-wrap {
+  padding: 10px 16px 6px;
+  position: sticky;
+  top: 57px;
+  z-index: 40;
+  background: var(--bg);
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  transition: border-color 0.2s;
+}
+.search-bar.active { border-color: var(--accent); }
+.search-bar-icon { font-size: 15px; flex-shrink: 0; }
+.search-bar-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  min-width: 0;
+}
+.search-bar-input::placeholder { color: var(--text-muted); }
+.search-bar-clear {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 28px; min-height: 28px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.search-bar-clear:hover { background: var(--bg-secondary); color: var(--text); }
+
+.search-results-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 4px 4px 8px;
+  letter-spacing: 0.3px;
+}
+
+/* ── FAB ── */
 .fab { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); right: 20px; z-index: 40; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.18); transition: transform 0.2s, box-shadow 0.2s; }
 .fab:active { transform: scale(0.93); }
+
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 80px 20px; text-align: center; }
 .empty-icon { font-size: 48px; line-height: 1; margin-bottom: 4px; }
 .empty-title { font-size: 17px; font-weight: 700; color: var(--text); }
@@ -305,6 +447,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .bubble-vis  { font-size: 13px; }
 .bubble-time { font-size: 11px; color: var(--text-muted); flex: 1; }
 .bubble-text { font-size: 13px; line-height: 1.65; color: var(--text); white-space: pre-wrap; margin: 0; padding-right: 8px; }
+.bubble-text :deep(mark) { background: var(--accent-light); color: var(--accent); border-radius: 3px; padding: 0 2px; font-weight: 600; }
 .bubble-media { display: grid; gap: 3px; margin-top: 8px; margin-right: 8px; border-radius: 10px; overflow: hidden; }
 .bubble-media.cols-1 { grid-template-columns: 1fr; }
 .bubble-media.cols-2 { grid-template-columns: 1fr 1fr; }
