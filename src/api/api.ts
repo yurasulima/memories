@@ -1,6 +1,6 @@
-import axios from 'axios'
+import axios, { type AxiosInstance } from 'axios'
 
-const api = axios.create({
+const api: AxiosInstance = axios.create({
   //baseURL: 'http://localhost:8080',
   baseURL: 'https://api.mblueberry.space',
   headers: {

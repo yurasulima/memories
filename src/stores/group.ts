@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { groupsApi } from '../api/group.js'
+import { groupsApi } from '@/api/group'
+import type { MemoriesGroupResponse, MemoriesGroupRequest } from '@/api/models'
 
 export const useGroupsStore = defineStore('groups', () => {
-  const groups = ref([])
-  const currentGroup = ref(null)
-  const loading = ref(false)
+  const groups = ref<MemoriesGroupResponse[]>([])
+  const currentGroup = ref<MemoriesGroupResponse | null>(null)
+  const loading = ref<boolean>(false)
 
-  const fetchMyGroups = async () => {
+  const fetchMyGroups = async (): Promise<void> => {
     loading.value = true
     try {
       groups.value = await groupsApi.getMyGroups()
@@ -19,7 +20,7 @@ export const useGroupsStore = defineStore('groups', () => {
     }
   }
 
-  const fetchGroupById = async (groupId) => {
+  const fetchGroupById = async (groupId: number): Promise<void> => {
     loading.value = true
     try {
       currentGroup.value = await groupsApi.getById(groupId)
@@ -28,7 +29,7 @@ export const useGroupsStore = defineStore('groups', () => {
     }
   }
 
-  const createGroup = async (data) => {
+  const createGroup = async (data: MemoriesGroupRequest): Promise<MemoriesGroupResponse> => {
     loading.value = true
     try {
       const newGroup = await groupsApi.create(data)

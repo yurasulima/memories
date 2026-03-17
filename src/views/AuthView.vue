@@ -1,3 +1,79 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import type { MemoriesRegisterRequest } from '@/api/models'
+import IconHeart from '../components/icons/IconHeart.vue'
+import IconEye from '../components/icons/IconEye.vue'
+import IconEyeOff from '../components/icons/IconEyeOff.vue'
+import type { AxiosError } from 'axios'
+
+type Tab = 'login' | 'register'
+
+interface AuthForm {
+  fullName: string
+  username: string
+  email: string
+  password: string
+}
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const tab = ref<Tab>('login')
+const showPass = ref<boolean>(false)
+const loading = ref<boolean>(false)
+const error = ref<string>('')
+
+const form = ref<AuthForm>({
+  fullName: '',
+  username: '',
+  email: '',
+  password: ''
+})
+
+const DEMO_EMAIL = 'demo@memories.app'
+const DEMO_PASSWORD = 'demo1234'
+
+const submit = async (): Promise<void> => {
+  error.value = ''
+  loading.value = true
+  try {
+    if (tab.value === 'login') {
+      await auth.login(form.value.email, form.value.password)
+    } else {
+      const data: MemoriesRegisterRequest = {
+        fullName: form.value.fullName,
+        username: form.value.username,
+        email: form.value.email,
+        password: form.value.password
+      }
+      await auth.register(data)
+    }
+    await router.push('/app')
+  } catch (e) {
+    const err = e as AxiosError<{ message?: string }>
+    error.value = err.response?.data?.message || 'Помилка. Перевірте дані.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const loginDemo = async (): Promise<void> => {
+  error.value = ''
+  loading.value = true
+  try {
+    await auth.login(DEMO_EMAIL, DEMO_PASSWORD)
+    await router.push('/app')
+  } catch {
+    error.value = 'Демо-аккаунт недоступний.'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+
 <template>
   <div class="auth-page">
     <div class="auth-card">
@@ -41,56 +117,19 @@
           <span v-if="loading">...</span>
           <span v-else>{{ tab === 'login' ? 'Увійти' : 'Зареєструватись' }}</span>
         </button>
+
+        <div class="divider"><span>або</span></div>
+
+        <button type="button" class="demo-btn" :disabled="loading" @click="loginDemo">
+          <span v-if="loading">...</span>
+          <span v-else>Увійти як демо</span>
+        </button>
       </form>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
-import IconHeart from '../components/icons/IconHeart.vue'
-import IconEye from '../components/icons/IconEye.vue'
-import IconEyeOff from '../components/icons/IconEyeOff.vue'
 
-const router = useRouter()
-const auth = useAuthStore()
-
-const tab = ref('login')
-const showPass = ref(false)
-const loading = ref(false)
-const error = ref('')
-
-const form = ref({
-  fullName: '',
-  username: '',
-  email: '',
-  password: ''
-})
-
-const submit = async () => {
-  error.value = ''
-  loading.value = true
-  try {
-    if (tab.value === 'login') {
-      await auth.login(form.value.email, form.value.password)
-    } else {
-      await auth.register({
-        fullName: form.value.fullName,
-        username: form.value.username,
-        email: form.value.email,
-        password: form.value.password
-      })
-    }
-    router.push('/')
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Помилка. Перевірте дані.'
-  } finally {
-    loading.value = false
-  }
-}
-</script>
 
 <style scoped>
 .auth-page {
@@ -225,6 +264,41 @@ const submit = async () => {
 }
 
 .submit-btn:disabled {
+  opacity: 0.6;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.demo-btn {
+  background: var(--bg-secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.demo-btn:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.demo-btn:disabled {
   opacity: 0.6;
 }
 </style>

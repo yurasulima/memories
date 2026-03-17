@@ -3,7 +3,9 @@
     <div class="page-content">
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
-          <component :is="Component" />
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
         </transition>
       </router-view>
     </div>
@@ -26,7 +28,6 @@
                 class="nav-icon"
             />
           </div>
-          <span class="nav-label">{{ item.label }}</span>
         </router-link>
       </div>
     </nav>
@@ -34,12 +35,17 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import IconHome from '../components/icons/IconHome.vue'
 import IconStats from '../components/icons/IconStats.vue'
 import IconSettings from '../components/icons/IconSettings.vue'
 
 const route = useRoute()
+const router = useRouter()
+
+router.afterEach(() => {
+  window.scrollTo({ top: 0 })
+})
 
 const navItems = [
   { name: 'app',     to: '/app/',         label: 'Стрічка',       icon: IconHome },
@@ -71,8 +77,7 @@ const navItems = [
   width: 100%;
   max-width: 480px;
   z-index: 100;
-  padding: 0 12px calc(10px + env(safe-area-inset-bottom)) 12px;
-  padding-top: 8px;
+  padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
   /* Fade from transparent to --bg so content underneath blurs away cleanly */
   background: linear-gradient(to top, var(--bg) 70%, transparent);
 }
@@ -85,7 +90,7 @@ const navItems = [
   background: var(--nav-bg, var(--bg-card));
   border: 1px solid var(--border);
   border-radius: 28px;
-  padding: 6px 8px;
+  padding: 3px 8px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
@@ -98,7 +103,7 @@ const navItems = [
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 4px 0;
+  padding: 2px 0;
   color: var(--text-muted);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
@@ -151,7 +156,7 @@ const navItems = [
 .nav-label {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 1px;
   transition: opacity 0.2s ease, transform 0.2s ease;
   opacity: 0.55;
   transform: translateY(1px);

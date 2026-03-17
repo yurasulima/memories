@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth.js'
-import LandingView from "@/views/LandingView.vue";
-import HomeView from "@/views/HomeView.vue";
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -14,6 +12,7 @@ const router = createRouter({
     },
 
     { path: '/', name: 'landing', component: () => import('../views/LandingView.vue') },
+
     {
       path: '/app',
       component: () => import('../views/AppLayout.vue'),
@@ -23,11 +22,6 @@ const router = createRouter({
           path: '',
           name: 'app',
           component: () => import('../views/HomeView.vue')
-        },
-        {
-          path: 'day/:id',
-          name: 'day',
-          component: () => import('../views/DayView.vue')
         },
         {
           path: 'stats',
@@ -41,6 +35,7 @@ const router = createRouter({
         }
       ]
     },
+
     { path: '/:pathMatch(.*)*', redirect: '/' }
   ]
 })

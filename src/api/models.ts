@@ -126,12 +126,37 @@ export interface PaginatedResponse<T> {
   size: number
 }
 
+
+export interface TopContentItem {
+  name: string
+  type: MemoriesContentType
+  count: number
+  totalSeries: number
+}
+
+export interface UpcomingDate {
+  name: string
+  description: string
+  daysUntil: number
+  yearsCount: number
+}
+
 export interface StatsResponse {
   totalDays: number
   totalPosts: number
   totalContents: number
   totalDates: number
-  contentByType: Record<MemoriesContentType, number>
-  postsByMonth: Record<string, number>
+  totalMedia: number
+  totalPrivatePosts: number
+  totalGroupPosts: number
+  totalOnceDates: number
+  totalRecurringDates: number
+  currentStreak: number
+  longestStreak: number
+  contentByType: Record<string, number>
+  topContent: TopContentItem[]
   daysByMonth: Record<string, number>
+  postsByMonth: Record<string, number>
+  daysByWeekday: Record<string, number>
+  upcomingDates: UpcomingDate[]
 }

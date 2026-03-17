@@ -1,3 +1,270 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useGroupsStore } from '@/stores/group'
+import { memoriesApi } from '@/api/memories'
+import type { DayResponse, MediaResponse, PostResponse, ContentResponse, DateResponse, MemoriesContentType } from '@/api/models'
+import IconHeart from '../components/icons/IconHeart.vue'
+import IconPlus from '../components/icons/IconPlus.vue'
+import IconClose from '../components/icons/IconClose.vue'
+import IconFilm from '../components/icons/IconFilm.vue'
+import PostDialog from '../components/dialogs/PostDialog.vue'
+import ContentDialog from '../components/dialogs/ContentDialog.vue'
+import DateDialog from '../components/dialogs/DateDialog.vue'
+import CreateDayDialog from '../components/dialogs/CreateDayDialog.vue'
+import CreateGroupDialog from '../components/dialogs/CreateGroupDialog.vue'
+import ConfirmDeleteDialog from '../components/dialogs/ConfirmDeleteDialog.vue'
+
+type DialogType = 'post' | 'content' | 'date'
+
+interface Dialogs {
+  post: boolean
+  content: boolean
+  date: boolean
+}
+
+interface CreateGroupPayload {
+  name: string
+  partner: { id: number }
+}
+
+const groupsStore = useGroupsStore()
+const days = ref<DayResponse[]>([])
+const loading = ref<boolean>(false)
+const page = ref<number>(0)
+const hasMore = ref<boolean>(true)
+const showCreateDay = ref<boolean>(false)
+const showCreateGroup = ref<boolean>(false)
+const createLoading = ref<boolean>(false)
+const selectedGroupId = ref<number | null>(null)
+const lightboxMedia = ref<MediaResponse | null>(null)
+const showConfirmDelete = ref<boolean>(false)
+const pendingDeleteId = ref<number | null>(null)
+const dialogs = ref<Dialogs>({ post: false, content: false, date: false })
+const dialogTargetDay = ref<DayResponse | null>(null)
+
+// Search
+const searchQuery = ref<string>('')
+const searchResults = ref<DayResponse[]>([])
+const searchLoading = ref<boolean>(false)
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+// ── Infinite scroll ──────────────────────────────────────────────────────────
+const handleScroll = (): void => {
+  if (loading.value || !hasMore.value || searchQuery.value) return
+  const scrollY = window.scrollY
+  const windowH = window.innerHeight
+  const docH = document.documentElement.scrollHeight
+  if (scrollY + windowH >= docH - 250) {
+    loadMore()
+  }
+}
+
+onMounted(async () => {
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  await groupsStore.fetchMyGroups()
+  if (groupsStore.currentGroup) {
+    selectedGroupId.value = groupsStore.currentGroup.id
+    await loadDays()
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  if (searchTimeout) clearTimeout(searchTimeout)
+})
+
+// ── Computed ─────────────────────────────────────────────────────────────────
+const displayDays = computed<DayResponse[]>(() =>
+    searchQuery.value ? searchResults.value : days.value
+)
+
+// ── Search ────────────────────────────────────────────────────────────────────
+const onSearchInput = (): void => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  if (!searchQuery.value.trim()) {
+    searchResults.value = []
+    return
+  }
+  searchTimeout = setTimeout(doSearch, 350)
+}
+
+const doSearch = async (): Promise<void> => {
+  if (!groupsStore.currentGroup || !searchQuery.value.trim()) return
+  searchLoading.value = true
+  try {
+    searchResults.value = await memoriesApi.searchDays(
+        groupsStore.currentGroup.id,
+        searchQuery.value.trim()
+    )
+  } catch {
+    searchResults.value = []
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+const clearSearch = (): void => {
+  searchQuery.value = ''
+  searchResults.value = []
+  if (searchTimeout) clearTimeout(searchTimeout)
+}
+
+const highlight = (text: string): string => {
+  if (!searchQuery.value || !text) return text
+  const escaped = searchQuery.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>')
+}
+
+const pluralDays = (n: number): string => {
+  if (n % 10 === 1 && n % 100 !== 11) return 'день'
+  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'дні'
+  return 'днів'
+}
+
+// ── Dialogs ───────────────────────────────────────────────────────────────────
+const openDialog = (type: DialogType, day: DayResponse): void => {
+  dialogTargetDay.value = day
+  dialogs.value[type] = true
+}
+
+const onPosted = (post: PostResponse): void => {
+  if (!dialogTargetDay.value) return
+  if (!dialogTargetDay.value.posts) dialogTargetDay.value.posts = []
+  dialogTargetDay.value.posts.unshift(post)
+}
+
+const onContentAdded = (c: ContentResponse): void => {
+  if (!dialogTargetDay.value) return
+  if (!dialogTargetDay.value.contents) dialogTargetDay.value.contents = []
+  dialogTargetDay.value.contents.push(c)
+}
+
+const onDateAdded = (d: DateResponse): void => {
+  if (!dialogTargetDay.value) return
+  if (!dialogTargetDay.value.dates) dialogTargetDay.value.dates = []
+  dialogTargetDay.value.dates.push(d)
+}
+
+// ── Delete ─────────────────────────────────────────────────────────────────────
+const confirmDeleteDay = (id: number): void => {
+  pendingDeleteId.value = id
+  showConfirmDelete.value = true
+}
+
+const deleteDay = async (): Promise<void> => {
+  if (pendingDeleteId.value === null) return
+  await memoriesApi.deleteDay(pendingDeleteId.value)
+  days.value = days.value.filter(d => d.id !== pendingDeleteId.value)
+  searchResults.value = searchResults.value.filter(d => d.id !== pendingDeleteId.value)
+  showConfirmDelete.value = false
+  pendingDeleteId.value = null
+}
+
+const deleteDate = async (day: DayResponse, id: number): Promise<void> => {
+  await memoriesApi.deleteDate(id)
+  day.dates = day.dates.filter(d => d.id !== id)
+}
+
+const deleteContent = async (day: DayResponse, id: number): Promise<void> => {
+  await memoriesApi.deleteContent(id)
+  day.contents = day.contents.filter(c => c.id !== id)
+}
+
+const deletePost = async (day: DayResponse, id: number): Promise<void> => {
+  await memoriesApi.deletePost(id)
+  day.posts = day.posts.filter(p => p.id !== id)
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────────
+watch(() => groupsStore.currentGroup, async (g) => {
+  if (g) {
+    selectedGroupId.value = g.id
+    days.value = []
+    page.value = 0
+    hasMore.value = true
+    clearSearch()
+    await loadDays()
+  }
+})
+
+const onGroupChange = async (): Promise<void> => {
+  if (selectedGroupId.value === null) return
+  await groupsStore.fetchGroupById(selectedGroupId.value)
+  days.value = []
+  page.value = 0
+  hasMore.value = true
+  clearSearch()
+  await loadDays()
+}
+
+const loadDays = async (): Promise<void> => {
+  if (!groupsStore.currentGroup || loading.value) return
+  loading.value = true
+  try {
+    const result = await memoriesApi.getGroupDays(groupsStore.currentGroup.id, page.value, 10)
+    const items = Array.isArray(result) ? result : result.content ?? []
+    const full = await Promise.all(items.map(d => memoriesApi.getDayById(d.id)))
+    days.value.push(...full)
+    hasMore.value = items.length === 10
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadMore = async (): Promise<void> => {
+  page.value++
+  await loadDays()
+}
+
+const createDay = async (date: string): Promise<void> => {
+  if (!groupsStore.currentGroup) return
+  createLoading.value = true
+  try {
+    const created = await memoriesApi.createDay({ groupId: groupsStore.currentGroup.id, date })
+    const full = await memoriesApi.getDayById(created.id)
+    days.value.unshift(full)
+    showCreateDay.value = false
+  } finally {
+    createLoading.value = false
+  }
+}
+
+const createGroup = async ({ name, partner }: CreateGroupPayload): Promise<void> => {
+  createLoading.value = true
+  try {
+    await groupsStore.createGroup({ name, memberIds: [partner.id] })
+    showCreateGroup.value = false
+    days.value = []
+    page.value = 0
+    await loadDays()
+  } finally {
+    createLoading.value = false
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const CONTENT_LABELS: Record<MemoriesContentType, string> = {
+  ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай'
+}
+const CONTENT_CLASSES: Record<MemoriesContentType, string> = {
+  ANIME: 'anime', CARTOON: 'cartoon', SERIES: 'series', FILM: 'film', HENTAI: 'hentai'
+}
+
+const contentLabel = (type: MemoriesContentType): string => CONTENT_LABELS[type] ?? type
+const ctypeClass   = (type: MemoriesContentType): string => CONTENT_CLASSES[type] ?? ''
+
+const getYear        = (d: string): number => new Date(d).getFullYear()
+const getDay         = (d: string): number => new Date(d).getDate()
+const getMonth       = (d: string): string => new Date(d).toLocaleDateString('uk-UA', { month: 'short' })
+const getWeekday     = (d: string): string => new Date(d).toLocaleDateString('uk-UA', { weekday: 'short' })
+const formatDateFull = (d: string): string => new Date(d).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })
+const formatTime     = (d: string): string => new Date(d).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })
+const isNewYear      = (day: DayResponse, index: number): boolean =>
+    index === 0 || getYear(day.date) !== getYear(displayDays.value[index - 1].date)
+</script>
+
+
+
 <template>
   <div class="home">
 
@@ -173,8 +440,8 @@
     <teleport to="body">
       <transition name="fade">
         <div v-if="lightboxMedia" class="lightbox" @click="lightboxMedia = null">
-          <img v-if="lightboxMedia.type?.startsWith('image')" :src="lightboxMedia.url" alt="" />
-          <video v-else :src="lightboxMedia.url" controls autoplay />
+          <img v-if="lightboxMedia?.type?.startsWith('image')" :src="lightboxMedia?.url" alt="" />
+          <video v-else :src="lightboxMedia?.url" controls autoplay />
           <button class="lightbox-x" @click="lightboxMedia = null"><IconClose :size="22" /></button>
         </div>
       </transition>
@@ -190,214 +457,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useGroupsStore } from '../stores/group.js'
-import { memoriesApi } from '../api/memories.js'
-import IconHeart from '../components/icons/IconHeart.vue'
-import IconPlus from '../components/icons/IconPlus.vue'
-import IconClose from '../components/icons/IconClose.vue'
-import IconFilm from '../components/icons/IconFilm.vue'
-import PostDialog from '../components/dialogs/PostDialog.vue'
-import ContentDialog from '../components/dialogs/ContentDialog.vue'
-import DateDialog from '../components/dialogs/DateDialog.vue'
-import CreateDayDialog from '../components/dialogs/CreateDayDialog.vue'
-import CreateGroupDialog from '../components/dialogs/CreateGroupDialog.vue'
-import ConfirmDeleteDialog from '../components/dialogs/ConfirmDeleteDialog.vue'
 
-const groupsStore = useGroupsStore()
-const days = ref([])
-const loading = ref(false)
-const page = ref(0)
-const hasMore = ref(true)
-const showCreateDay = ref(false)
-const showCreateGroup = ref(false)
-const createLoading = ref(false)
-const selectedGroupId = ref(null)
-const lightboxMedia = ref(null)
-const showConfirmDelete = ref(false)
-const pendingDeleteId = ref(null)
-const dialogs = ref({ post: false, content: false, date: false })
-const dialogTargetDay = ref(null)
-
-// Search
-const searchQuery = ref('')
-const searchResults = ref([])
-const searchLoading = ref(false)
-let searchTimeout = null
-
-// ── Infinite scroll via window ──────────────────────────────────────────────
-const handleScroll = () => {
-  // Не пагінуємо під час пошуку або якщо вже завантажуємо
-  if (loading.value || !hasMore.value || searchQuery.value) return
-
-  const scrollY = window.scrollY
-  const windowH = window.innerHeight
-  const docH = document.documentElement.scrollHeight
-
-  // Тригер за 250px до кінця сторінки
-  if (scrollY + windowH >= docH - 250) {
-    loadMore()
-  }
-}
-
-onMounted(async () => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
-  await groupsStore.fetchMyGroups()
-  if (groupsStore.currentGroup) {
-    selectedGroupId.value = groupsStore.currentGroup.id
-    await loadDays()
-  }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  clearTimeout(searchTimeout)
-})
-
-// ── Computed ─────────────────────────────────────────────────────────────────
-const displayDays = computed(() => searchQuery.value ? searchResults.value : days.value)
-
-// ── Search ───────────────────────────────────────────────────────────────────
-const onSearchInput = () => {
-  clearTimeout(searchTimeout)
-  if (!searchQuery.value.trim()) {
-    searchResults.value = []
-    return
-  }
-  searchTimeout = setTimeout(doSearch, 350)
-}
-
-const doSearch = async () => {
-  if (!groupsStore.currentGroup || !searchQuery.value.trim()) return
-  searchLoading.value = true
-  try {
-    searchResults.value = await memoriesApi.searchDays(
-        groupsStore.currentGroup.id,
-        searchQuery.value.trim()
-    )
-  } catch {
-    searchResults.value = []
-  } finally {
-    searchLoading.value = false
-  }
-}
-
-const clearSearch = () => {
-  searchQuery.value = ''
-  searchResults.value = []
-  clearTimeout(searchTimeout)
-}
-
-const highlight = (text) => {
-  if (!searchQuery.value || !text) return text
-  const escaped = searchQuery.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>')
-}
-
-const pluralDays = (n) => {
-  if (n % 10 === 1 && n % 100 !== 11) return 'день'
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return 'дні'
-  return 'днів'
-}
-
-// ── Dialogs ───────────────────────────────────────────────────────────────────
-const openDialog = (type, day) => { dialogTargetDay.value = day; dialogs.value[type] = true }
-
-const onPosted      = (post) => { if (!dialogTargetDay.value.posts)    dialogTargetDay.value.posts    = []; dialogTargetDay.value.posts.unshift(post) }
-const onContentAdded = (c)   => { if (!dialogTargetDay.value.contents) dialogTargetDay.value.contents = []; dialogTargetDay.value.contents.push(c) }
-const onDateAdded    = (d)   => { if (!dialogTargetDay.value.dates)    dialogTargetDay.value.dates    = []; dialogTargetDay.value.dates.push(d) }
-
-// ── Delete ────────────────────────────────────────────────────────────────────
-const confirmDeleteDay = (id) => { pendingDeleteId.value = id; showConfirmDelete.value = true }
-const deleteDay = async () => {
-  await memoriesApi.deleteDay(pendingDeleteId.value)
-  days.value = days.value.filter(d => d.id !== pendingDeleteId.value)
-  searchResults.value = searchResults.value.filter(d => d.id !== pendingDeleteId.value)
-  showConfirmDelete.value = false
-  pendingDeleteId.value = null
-}
-const deleteDate    = async (day, id) => { await memoriesApi.deleteDate(id);    day.dates    = day.dates.filter(d => d.id !== id) }
-const deleteContent = async (day, id) => { await memoriesApi.deleteContent(id); day.contents = day.contents.filter(c => c.id !== id) }
-const deletePost    = async (day, id) => { await memoriesApi.deletePost(id);    day.posts    = day.posts.filter(p => p.id !== id) }
-
-// ── Data loading ──────────────────────────────────────────────────────────────
-watch(() => groupsStore.currentGroup, async (g) => {
-  if (g) {
-    selectedGroupId.value = g.id
-    days.value = []
-    page.value = 0
-    hasMore.value = true
-    clearSearch()
-    await loadDays()
-  }
-})
-
-const onGroupChange = async () => {
-  await groupsStore.fetchGroupById(selectedGroupId.value)
-  days.value = []
-  page.value = 0
-  hasMore.value = true
-  clearSearch()
-  await loadDays()
-}
-
-const loadDays = async () => {
-  if (!groupsStore.currentGroup || loading.value) return
-  loading.value = true
-  try {
-    const result = await memoriesApi.getGroupDays(groupsStore.currentGroup.id, page.value, 10)
-    const items = Array.isArray(result) ? result : result.content || []
-    const full = await Promise.all(items.map(d => memoriesApi.getDayById(d.id)))
-    days.value.push(...full)
-    hasMore.value = items.length === 10
-  } finally {
-    loading.value = false
-  }
-}
-
-const loadMore = async () => {
-  page.value++
-  await loadDays()
-}
-
-const createDay = async (date) => {
-  if (!groupsStore.currentGroup) return
-  createLoading.value = true
-  try {
-    const created = await memoriesApi.createDay({ groupId: groupsStore.currentGroup.id, date })
-    const full = await memoriesApi.getDayById(created.id)
-    days.value.unshift(full)
-    showCreateDay.value = false
-  } finally {
-    createLoading.value = false
-  }
-}
-
-const createGroup = async ({ name, partner }) => {
-  createLoading.value = true
-  try {
-    await groupsStore.createGroup({ name, memberIds: [partner.id] })
-    showCreateGroup.value = false
-    days.value = []
-    page.value = 0
-    await loadDays()
-  } finally {
-    createLoading.value = false
-  }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const contentLabel   = (type) => ({ ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай' }[type] || type)
-const ctypeClass     = (type) => ({ ANIME: 'anime', CARTOON: 'hentai', SERIES: 'series', FILM: 'film', HENTAI: 'hentai' }[type] || '')
-const getYear        = (d) => new Date(d).getFullYear()
-const getDay         = (d) => new Date(d).getDate()
-const getMonth       = (d) => new Date(d).toLocaleDateString('uk-UA', { month: 'short' })
-const getWeekday     = (d) => new Date(d).toLocaleDateString('uk-UA', { weekday: 'short' })
-const formatDateFull = (d) => new Date(d).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })
-const formatTime     = (d) => new Date(d).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })
-const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getYear(displayDays.value[index - 1].date)
-</script>
 
 <style scoped>
 .home { min-height: 100vh; padding-bottom: 100px; }
@@ -421,7 +481,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
   align-items: center;
   gap: 8px;
   background: var(--input-bg);
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 14px;
   padding: 10px 12px;
   transition: border-color 0.2s;
@@ -465,8 +525,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .empty-title { font-size: 17px; font-weight: 700; color: var(--text); }
 .empty-sub { font-size: 14px; color: var(--text-muted); }
 .loader-wrap { display: flex; justify-content: center; padding: 60px; }
-.spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; }
-.spinner-sm { width: 16px; height: 16px; display: inline-block; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; vertical-align: middle; }
+.spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .timeline { padding: 8px 16px 20px; }
 .year-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 12px; padding-left: 4px; }
@@ -475,7 +534,7 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .timeline-row { display: grid; grid-template-columns: 38px 28px 1fr; align-items: stretch; margin-bottom: 16px; }
 .date-stamp { display: flex; flex-direction: column; align-items: center; padding-top: 12px; }
 .stamp-day { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1; }
-.stamp-month { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.3px; }
+.stamp-month { font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
 .stamp-weekday { font-size: 10px; color: var(--text-muted); text-transform: capitalize; margin-top: 1px; }
 .spine { display: flex; flex-direction: column; align-items: center; padding-top: 16px; padding-bottom: 5%; }
 .spine-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--accent); flex-shrink: 0; z-index: 1; }
@@ -504,37 +563,16 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
   font-weight: 700;
   border-radius: 6px;
   padding: 2px 7px;
-  letter-spacing: 0.3px;
+  letter-spacing: 1px;
   flex-shrink: 0;
   color: var(--ctype-text, #000);
   background: var(--ctype-bg, #eee);
 }
-
-/* Типи контенту */
-.ctype.anime {
-  --ctype-bg: var(--anime-bg, #d0e7ff);
-  --ctype-text: var(--anime-text, #1a73e8);
-}
-
-.ctype.hentai {
-  --ctype-bg: var(--hentai-bg, #f4d0e0);
-  --ctype-text: var(--hentai-text, #c2185b);
-}
-
-.ctype.cartoon {
-  --ctype-bg: var(--cartoon-bg, #f4d0e0);
-  --ctype-text: var(--cartoon-text, #c2185b);
-}
-
-.ctype.series {
-  --ctype-bg: var(--series-bg, #dff0d8);
-  --ctype-text: var(--series-text, #2e7d32);
-}
-
-.ctype.film {
-  --ctype-bg: var(--film-bg, #fff3e0);
-  --ctype-text: var(--film-text, #e65100);
-}
+.ctype.anime   { --ctype-bg: var(--anime-bg, #d0e7ff);   --ctype-text: var(--anime-text, #1a73e8); }
+.ctype.hentai  { --ctype-bg: var(--hentai-bg, #f4d0e0);  --ctype-text: var(--hentai-text, #c2185b); }
+.ctype.cartoon { --ctype-bg: var(--cartoon-bg, #f4d0e0); --ctype-text: var(--cartoon-text, #c2185b); }
+.ctype.series  { --ctype-bg: var(--series-bg, #dff0d8);  --ctype-text: var(--series-text, #2e7d32); }
+.ctype.film    { --ctype-bg: var(--film-bg, #fff3e0);    --ctype-text: var(--film-text, #e65100); }
 .content-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .content-meta { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
 .post-mini-card { padding: 10px 4px 10px 12px; }
@@ -556,16 +594,16 @@ const isNewYear      = (day, index) => index === 0 || getYear(day.date) !== getY
 .card-actions { display: flex; gap: 6px; padding: 2px 0 10px; }
 .card-action-btn { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 13px; transition: color 0.15s, background 0.15s, border-color 0.15s; }
 .card-action-btn:hover { color: var(--accent); background: var(--accent-light); border-color: transparent; }
-.load-more-wrap { display: flex; justify-content: center; padding: 16px 0; }
-.load-more-btn { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 14px; font-weight: 600; padding: 10px 22px; border: 1.5px solid var(--accent); border-radius: 20px; transition: background 0.15s; }
-.load-more-btn:hover { background: var(--accent-light); }
-.load-more-btn:disabled { opacity: 0.5; }
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.94); display: flex; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
 .lightbox img, .lightbox video { max-width: 100%; max-height: 90vh; border-radius: 14px; object-fit: contain; }
 .lightbox-x { position: absolute; top: 16px; right: 16px; color: white; background: rgba(255,255,255,0.12); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
 .lightbox-x:hover { background: rgba(255,255,255,0.22); }
 .btn-accent { background: var(--accent); color: white; border-radius: 14px; padding: 14px 22px; font-size: 15px; font-weight: 700; transition: background 0.2s, transform 0.15s; }
 .btn-accent:hover:not(:disabled) { background: var(--accent-hover, var(--accent)); }
+
+/* noinspection CssUnusedSymbol */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+
+/* noinspection CssUnusedSymbol */
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
