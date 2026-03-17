@@ -2,10 +2,12 @@ export type MemoriesVisibility = 'GROUP' | 'PRIVATE'
 
 export type MemoriesContentType = 'CARTOON' | 'ANIME' | 'HENTAI' | 'SERIES' | 'FILM'
 
+export type MediaType = 'MEMORIES' | 'GIF' | 'VIDEO'
+
 export interface MediaResponse {
   id: number
   url: string
-  type: string
+  type: MediaType
   createdAt: string
 }
 
@@ -84,12 +86,22 @@ export interface CreateDayRequest {
   date: string
 }
 
+
+export interface PostMediaRequest {
+  url: string
+  type: MediaType
+  width: number
+  height: number
+  duration?: number
+}
+
 export interface AddPostRequest {
   dayId: number
   text: string
   visibility: MemoriesVisibility
-  mediaIds?: number[]
+  media?: PostMediaRequest[]
 }
+
 
 export interface AddContentRequest {
   dayId: number
@@ -159,4 +171,8 @@ export interface StatsResponse {
   postsByMonth: Record<string, number>
   daysByWeekday: Record<string, number>
   upcomingDates: UpcomingDate[]
+}
+
+export interface UploadImageResponse {
+  url: string
 }

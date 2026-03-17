@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGroupsStore } from '@/stores/group'
 import { memoriesApi } from '@/api/memories'
+import { mediaUrl } from '@/api/api'
 import type { DayResponse, MediaResponse, PostResponse, ContentResponse, DateResponse, MemoriesContentType } from '@/api/models'
 import IconHeart from '../components/icons/IconHeart.vue'
 import IconPlus from '../components/icons/IconPlus.vue'
@@ -401,10 +402,15 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
                   </div>
                   <p class="bubble-text" v-html="highlight(post.text)"></p>
                   <div v-if="post.media?.length" class="bubble-media" :class="'cols-' + Math.min(post.media.length, 3)">
-                    <div v-for="m in post.media" :key="m.id" class="media-cell" @click="lightboxMedia = m">
-                      <img v-if="m.type?.startsWith('image')" :src="m.url" alt="" loading="lazy" />
+                    <div
+                        v-for="m in post.media"
+                        :key="m.id"
+                        class="media-cell"
+                        @click="() => { console.log(m);  }"
+                    >
+                      <img v-if="m.type === 'MEMORIES'" :src="mediaUrl(m.url)" alt="" loading="lazy" />
                       <div v-else class="media-video-wrap">
-                        <video :src="m.url" />
+                        <video :src="mediaUrl(m.url)" />
                         <div class="play-overlay"><IconFilm :size="20" /></div>
                       </div>
                     </div>
@@ -440,8 +446,8 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
     <teleport to="body">
       <transition name="fade">
         <div v-if="lightboxMedia" class="lightbox" @click="lightboxMedia = null">
-          <img v-if="lightboxMedia?.type?.startsWith('image')" :src="lightboxMedia?.url" alt="" />
-          <video v-else :src="lightboxMedia?.url" controls autoplay />
+          <img v-if="lightboxMedia?.type?.startsWith('image')" :src="mediaUrl(lightboxMedia.url)" alt="" />
+          <video v-else :src="mediaUrl(lightboxMedia.url)" controls autoplay />
           <button class="lightbox-x" @click="lightboxMedia = null"><IconClose :size="22" /></button>
         </div>
       </transition>
