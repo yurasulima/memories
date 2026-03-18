@@ -11,7 +11,7 @@ const router = createRouter({
       meta: { public: true }
     },
 
-    { path: '/', name: 'landing', component: () => import('../views/LandingView.vue') },
+    { path: '/', name: 'landing', meta: { public: true }, component: () => import('../views/LandingView.vue') },
 
     {
       path: '/app',

@@ -39,7 +39,6 @@ import { useRoute, useRouter } from 'vue-router'
 import IconHome from '../components/icons/IconHome.vue'
 import IconStats from '../components/icons/IconStats.vue'
 import IconSettings from '../components/icons/IconSettings.vue'
-
 const route = useRoute()
 const router = useRouter()
 

@@ -5,7 +5,7 @@ type Theme = 'white' | 'pastel' | 'dark' | 'dark-pastel'
 
 export const useThemeStore = defineStore('theme', () => {
   const themes: Theme[] = ['white', 'pastel', 'dark', 'dark-pastel']
-  const theme = ref<Theme>((localStorage.getItem('theme') as Theme) || 'white')
+  const theme = ref<Theme>((localStorage.getItem('theme') as Theme) || 'dark')
 
   const setTheme = (newTheme: Theme): void => {
     if (themes.includes(newTheme)) {

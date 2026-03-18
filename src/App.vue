@@ -4,13 +4,16 @@
   </div>
 </template>
 
-<script setup>
-import { watch } from 'vue'
+<script setup lang="ts">
+import {onMounted, ref, watch} from 'vue'
 import { useThemeStore } from './stores/theme.js'
+import { StatusBar, Style } from '@capacitor/status-bar'
+import { SafeArea } from 'capacitor-plugin-safe-area'
 
 const themeStore = useThemeStore()
 
-// Sync theme class to <body> so teleported dialogs inherit CSS vars
+const appInsets = ref({ top: 0, bottom: 0 })
+
 watch(
     () => themeStore.theme,
     (newTheme, oldTheme) => {
@@ -19,6 +22,19 @@ watch(
     },
     { immediate: true }
 )
+onMounted(async () => {
+
+
+
+  // 1. Edge-to-edge через StatusBar
+  await StatusBar.setOverlaysWebView({ overlay: false })
+  await StatusBar.setStyle({ style: Style.Dark })
+
+  // 2. SafeArea інсети
+  const insets = await SafeArea.getSafeAreaInsets()
+  appInsets.value.top = insets.insets.top
+  appInsets.value.bottom = insets.insets.bottom
+})
 </script>
 
 <style>
