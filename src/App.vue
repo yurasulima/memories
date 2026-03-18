@@ -30,10 +30,6 @@ onMounted(async () => {
   await StatusBar.setOverlaysWebView({ overlay: false })
   await StatusBar.setStyle({ style: Style.Dark })
 
-  // 2. SafeArea інсети
-  const insets = await SafeArea.getSafeAreaInsets()
-  appInsets.value.top = insets.insets.top
-  appInsets.value.bottom = insets.insets.bottom
 })
 </script>
 

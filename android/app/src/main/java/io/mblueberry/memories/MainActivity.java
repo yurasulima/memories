@@ -11,19 +11,5 @@ import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-        View root = getBridge().getWebView();
-
-        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-            Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
-
-            // 👇 додаємо відступ зверху
-            v.setPadding(0, 150, 0, 0);
-
-            return insets;
-        });
-    }
 }
