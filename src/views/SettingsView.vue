@@ -88,37 +88,6 @@
         </div>
       </div>
 
-      <!-- Стрічка спогадів -->
-      <div class="section-card">
-        <h2>{{ $t('settings.group') }}</h2>
-        <div v-if="groupsStore.currentGroup" class="group-info">
-          <div class="group-row">
-            <div class="group-details">
-              <span class="group-name-label">{{ groupsStore.currentGroup.name }}</span>
-              <span class="group-meta">{{ groupsStore.currentGroup.members?.length || 0 }} {{ $t('settings.members') }}</span>
-            </div>
-          </div>
-          <div class="members-list">
-            <div v-for="m in groupsStore.currentGroup.members" :key="m.id" class="member-row">
-              <div class="member-avatar">{{ m.fullName?.charAt(0) || m.username?.charAt(0) }}</div>
-              <div class="member-info">
-                <span class="member-name">
-                  {{
-                    m.fullName
-                        ? m.fullName.split(' ')[0] + ' ' + (m.fullName.split(' ')[1]?.charAt(0) || '') + '.'
-                        : ''
-                  }}
-                </span>
-                <span class="member-username">@{{ m.username }}</span>
-              </div>
-              <span v-if="m.id === groupsStore.currentGroup.owner?.id" class="owner-badge">{{ $t('settings.owner') }}</span>
-            </div>
-          </div>
-        </div>
-        <div v-else class="empty-group">
-          <span>{{ $t('settings.noGroup') }}</span>
-        </div>
-      </div>
 
       <button class="logout-btn" @click="logout">
         <IconLogout :size="18" />
