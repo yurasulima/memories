@@ -5,13 +5,20 @@
         <div class="sheet">
           <div class="sheet-handle"></div>
           <div class="sheet-header">
-            <span>Нова група</span>
+            <span>{{ $t('dialogs.createGroup.title') }}</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)"><IconClose :size="18" /></button>
           </div>
           <div class="sheet-body">
-            <input v-model="groupName" class="sheet-input" placeholder="Назва групи" />
+            <input v-model="groupName" class="sheet-input" :placeholder="$t('dialogs.createGroup.namePlaceholder')" />
+
+            <!-- Partner search -->
             <div class="search-wrap">
-              <input v-model="userQuery" class="sheet-input" placeholder="Знайти партнера..." @input="onUserSearch" />
+              <input
+                v-model="userQuery"
+                class="sheet-input"
+                :placeholder="$t('dialogs.createGroup.partnerPlaceholder')"
+                @input="onUserSearch"
+              />
               <transition name="fade">
                 <div v-if="userResults.length" class="search-drop">
                   <button v-for="u in userResults" :key="u.id" class="search-item" @click="selectPartner(u)">
@@ -24,16 +31,47 @@
                 </div>
               </transition>
             </div>
+
+            <!-- Selected partner pill -->
             <div v-if="selectedPartner" class="selected-pill">
               <div class="avatar sm">{{ selectedPartner.fullName?.charAt(0) }}</div>
               <span>{{ selectedPartner.fullName }}</span>
               <button @click="selectedPartner = null; userQuery = ''"><IconClose :size="13" /></button>
             </div>
+
+            <!-- Solo confirm banner -->
+            <transition name="fade">
+              <div v-if="showSoloConfirm" class="solo-banner">
+                <div class="solo-icon">🤍</div>
+                <div class="solo-text">
+                  <span class="solo-title">{{ $t('dialogs.createGroup.soloConfirm') }}</span>
+                  <span class="solo-desc">{{ $t('dialogs.createGroup.soloDesc') }}</span>
+                </div>
+              </div>
+            </transition>
           </div>
+
           <div class="sheet-footer">
-            <button class="btn-accent full" @click="submit" :disabled="!groupName || !selectedPartner || loading">
+            <!-- Solo button shown when name filled but no partner -->
+            <button
+              v-if="showSoloConfirm"
+              class="btn-accent full solo-btn"
+              @click="submitSolo"
+              :disabled="loading"
+            >
               <span v-if="loading" class="spinner-sm white"></span>
-              <span v-else>Створити</span>
+              <span v-else>{{ $t('dialogs.createGroup.soloCreate') }}</span>
+            </button>
+
+            <!-- Normal button when partner selected -->
+            <button
+              v-else
+              class="btn-accent full"
+              @click="submit"
+              :disabled="!groupName || !selectedPartner || loading"
+            >
+              <span v-if="loading" class="spinner-sm white"></span>
+              <span v-else>{{ $t('dialogs.createGroup.create') }}</span>
             </button>
           </div>
         </div>
@@ -43,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { groupsApi } from '@/api/group.js'
 import IconClose from '@/components/icons/IconClose.vue'
 
@@ -59,8 +97,18 @@ const userResults = ref([])
 const selectedPartner = ref(null)
 let searchTimeout = null
 
+// Show solo confirm when name is filled but no partner selected and user hasn't typed in partner field
+const showSoloConfirm = computed(() =>
+  groupName.value.trim().length > 0 && !selectedPartner.value && userQuery.value.trim().length === 0
+)
+
 watch(() => props.modelValue, (val) => {
-  if (val) { groupName.value = ''; userQuery.value = ''; userResults.value = []; selectedPartner.value = null }
+  if (val) {
+    groupName.value = ''
+    userQuery.value = ''
+    userResults.value = []
+    selectedPartner.value = null
+  }
 })
 
 const onUserSearch = () => {
@@ -71,11 +119,21 @@ const onUserSearch = () => {
     catch { userResults.value = [] }
   }, 300)
 }
-const selectPartner = (u) => { selectedPartner.value = u; userQuery.value = ''; userResults.value = [] }
+
+const selectPartner = (u) => {
+  selectedPartner.value = u
+  userQuery.value = ''
+  userResults.value = []
+}
 
 const submit = () => {
   if (!groupName.value || !selectedPartner.value) return
   emit('create', { name: groupName.value, partner: selectedPartner.value })
+}
+
+const submitSolo = () => {
+  if (!groupName.value) return
+  emit('create', { name: groupName.value, partner: null })
 }
 </script>
 
@@ -108,6 +166,22 @@ const submit = () => {
 .selected-pill { display: flex; align-items: center; gap: 8px; background: var(--accent-light); border: 1px solid var(--border); border-radius: 20px; padding: 6px 10px 6px 6px; }
 .selected-pill span { font-size: 14px; font-weight: 600; flex: 1; }
 .selected-pill button { color: var(--text-muted); display: flex; align-items: center; }
+
+/* Solo confirm banner */
+.solo-banner {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px;
+  animation: fadeSlide 0.2s ease;
+}
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.solo-icon { font-size: 24px; flex-shrink: 0; }
+.solo-text { display: flex; flex-direction: column; gap: 3px; }
+.solo-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.solo-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.solo-btn { background: var(--bg-secondary) !important; color: var(--text) !important; border: 1.5px solid var(--border) !important; }
+.solo-btn:hover:not(:disabled) { background: var(--border) !important; }
+
 .spinner-sm { width: 16px; height: 16px; display: inline-block; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.65s linear infinite; vertical-align: middle; }
 .spinner-sm.white { border-color: rgba(255,255,255,0.3); border-top-color: white; }
 @keyframes spin { to { transform: rotate(360deg); } }

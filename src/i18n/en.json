@@ -1,0 +1,271 @@
+{
+  "nav": {
+    "features": "Features",
+    "how": "How it works",
+    "start": "Get started",
+    "open": "Open"
+  },
+  "landing": {
+    "badge": "A diary for two",
+    "hero": {
+      "title1": "Preserve",
+      "title2": "every moment",
+      "subtitle": "together, for yourselves, forever",
+      "desc": "Memories is a private space for couples. Keep a chronicle of your life together: posts, photos, movies, anime, and special dates.",
+      "cta": "Get started",
+      "more": "Learn more"
+    },
+    "mockup": {
+      "group": "Us",
+      "searchPlaceholder": "Search posts, content, dates...",
+      "feed": "Feed",
+      "stats": "Stats",
+      "settings": "Settings"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title1": "Everything for your",
+      "title2": "shared chronicle",
+      "sub": "From text to photos, from movies to important dates — one app for your entire life together.",
+      "items": {
+        "feed": {
+          "title": "Memory feed",
+          "desc": "A chronological timeline of all your days. Scroll back and relive your best moments again."
+        },
+        "dates": {
+          "title": "Important dates",
+          "desc": "Save anniversaries and special events. Mark them as one-time or yearly — the app won't forget."
+        },
+        "content": {
+          "title": "Content together",
+          "desc": "Movies, series, anime, cartoons. Track what you watch together — with episodes and seasons."
+        },
+        "posts": {
+          "title": "Posts with media",
+          "desc": "Text, photos and video for each day. Private for yourself or visible to both of you."
+        }
+      }
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title1": "Three steps and you're",
+      "title2": "ready to go",
+      "step": "Step",
+      "steps": {
+        "1": {
+          "title": "Create a group",
+          "desc": "Sign up and invite your partner. Together you get a shared space accessible only to the two of you."
+        },
+        "2": {
+          "title": "Add your first day",
+          "desc": "Tap «+» and choose a date. Add a post, photo, mark what you watched — fill the day with your own words."
+        },
+        "3": {
+          "title": "Come back and remember",
+          "desc": "Scroll through your feed or search by words and dates. Every memory is waiting for you — always."
+        }
+      }
+    },
+    "chips": {
+      "eyebrow": "What you can save",
+      "title1": "Every detail of",
+      "title2": "your life together",
+      "items": {
+        "anime": {
+          "label": "Anime",
+          "sub": "with episodes"
+        },
+        "series": {
+          "label": "Series",
+          "sub": "seasons & episodes"
+        },
+        "films": {
+          "label": "Movies",
+          "sub": "at home or cinema"
+        },
+        "cartoon": {
+          "label": "Cartoons",
+          "sub": "and more"
+        },
+        "dates": {
+          "label": "Important dates",
+          "sub": "anniversaries & events"
+        },
+        "media": {
+          "label": "Photos & video",
+          "sub": "in day posts"
+        },
+        "notes": {
+          "label": "Text notes",
+          "sub": "thoughts & feelings"
+        }
+      }
+    },
+    "quote": {
+      "text1": "Small moments are your",
+      "accent": "shared story",
+      "text2": "Don't lose a single one.",
+      "author": "Memories — for those who cherish every day"
+    },
+    "cta": {
+      "title1": "It starts",
+      "title2": "today",
+      "sub": "Create your first day and start building an archive of your love.",
+      "btn": "Open Memories"
+    },
+    "footer": {
+      "copy": "Just for the two of you ♥"
+    },
+    "contentTypes": {
+      "film": "Movie",
+      "hentai": "Hentai",
+      "cartoon": "Cartoon",
+      "anime": "Anime",
+      "series": "Series"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "First Last",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "submitLogin": "Sign in",
+    "submitRegister": "Create account",
+    "loading": "...",
+    "or": "or",
+    "demoLogin": "Sign in as demo",
+    "demoLoading": "...",
+    "errors": {
+      "default": "Error. Please check your details.",
+      "demoUnavailable": "Demo account unavailable."
+    }
+  },
+  "home": {
+    "searchPlaceholder": "Search posts, content, dates...",
+    "noGroup": "No memory streams yet",
+    "createGroup": "Create stream",
+    "noResults": "Nothing found",
+    "noResultsSub": "Try a different search",
+    "noMemories": "No memories yet",
+    "noMemoriesSub": "Tap + to add your first day",
+    "addPost": "Post",
+    "addDate": "Date",
+    "addContent": "Content",
+    "addStream": "+ Stream",
+    "endContent": "✨ These are all memories"
+  },
+  "stats": {
+    "title": "Statistics",
+    "noData": "No data",
+    "totalRecords": "Total records",
+    "posts": "Posts",
+    "watched": "Watched",
+    "photos": "Photos",
+    "currentStreak": "Current streak",
+    "longestStreak": "Longest streak",
+    "oneTimeDates": "One-time dates",
+    "yearlyDates": "Yearly dates",
+    "sharedPosts": "Shared posts",
+    "personalPosts": "Personal posts",
+    "topContent": "Top content",
+    "contentByType": "Content by type",
+    "recordsByMonth": "Records by month",
+    "postsByMonth": "Posts by month",
+    "activityByDay": "Activity by weekday",
+    "upcomingAnniversaries": "Upcoming anniversaries",
+    "days": "d.",
+    "contentTypes": {
+      "ANIME": "Anime",
+      "CARTOON": "Cartoon",
+      "SERIES": "Series",
+      "FILM": "Movie",
+      "HENTAI": "Hentai"
+    },
+    "months": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
+  },
+
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "theme": "Theme",
+    "group": "Memory streams",
+    "about": "About",
+    "owner": "owner",
+    "members": "{count} members",
+    "noGroup": "No active stream",
+    "logout": "Sign out",
+    "aboutText1": "Memories is a small project for saving shared moments, photos and stories. We build it for couples and close people, so their memories are always close.",
+    "aboutText2": "If you enjoy the project — you can support its development ❤️",
+    "support": "Support (Monobank)",
+    "telegram": "Telegram: @ImMurMurCat",
+    "themes": {
+      "white": "White",
+      "pastel": "Pastel",
+      "dark": "Dark",
+      "darkPastel": "Dark pastel",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "sunset": "Sunset",
+      "midnight": "Midnight",
+      "rose": "Rose",
+      "mint": "Mint",
+      "sky": "Sky",
+      "amoled": "Amoled"
+    },
+    "language": "Language"
+  },
+  "dialogs": {
+    "confirmDelete": {
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "content": {
+      "title": "Add content",
+      "add": "Add",
+      "loading": "..."
+    },
+    "createDay": {
+      "title": "New day",
+      "create": "Create",
+      "loading": "..."
+    },
+    "createGroup": {
+      "title": "New stream",
+      "create": "Create",
+      "loading": "...",
+      "namePlaceholder": "Stream name",
+      "partnerPlaceholder": "Find a partner...",
+      "soloConfirm": "Create personal memories?",
+      "soloDesc": "No partner — this stream will be just for you",
+      "soloCreate": "Yes, create personal"
+    },
+    "date": {
+      "title": "New date",
+      "oneTime": "One-time event",
+      "save": "Save",
+      "loading": "..."
+    },
+    "post": {
+      "title": "New post",
+      "media": "Media",
+      "publish": "Publish",
+      "loading": "..."
+    }
+  }
+}

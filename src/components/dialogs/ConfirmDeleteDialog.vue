@@ -5,8 +5,8 @@
         <div class="confirm-box">
           <p class="confirm-text">{{ message }}</p>
           <div class="confirm-row">
-            <button class="confirm-cancel" @click="$emit('update:modelValue', false)">Скасувати</button>
-            <button class="confirm-delete" @click="$emit('confirm')">Видалити</button>
+            <button class="confirm-cancel" @click="$emit('update:modelValue', false)">{{ $t('dialogs.confirmDelete.cancel') }}</button>
+            <button class="confirm-delete" @click="$emit('confirm')">{{ $t('dialogs.confirmDelete.delete') }}</button>
           </div>
         </div>
       </div>

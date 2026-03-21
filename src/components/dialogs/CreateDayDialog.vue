@@ -5,7 +5,7 @@
         <div class="sheet">
           <div class="sheet-handle"></div>
           <div class="sheet-header">
-            <span>Новий день</span>
+            <span>{{ $t('dialogs.createDay.title') }}</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)"><IconClose :size="18" /></button>
           </div>
           <div class="sheet-body">
@@ -14,7 +14,7 @@
           <div class="sheet-footer">
             <button class="btn-accent full" @click="submit" :disabled="!date || loading">
               <span v-if="loading" class="spinner-sm white"></span>
-              <span v-else>Створити</span>
+              <span v-else>{{ $t('dialogs.createDay.create') }}</span>
             </button>
           </div>
         </div>

@@ -5,7 +5,7 @@
         <div class="sheet">
           <div class="sheet-handle"></div>
           <div class="sheet-header">
-            <span>Додати контент</span>
+            <span>{{ $t('dialogs.content.title') }}</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)"><IconClose :size="18" /></button>
           </div>
           <!-- заміни цю частину -->
@@ -33,7 +33,7 @@
           <div class="sheet-footer">
             <button class="btn-accent full" @click="submit" :disabled="!form.name || loading">
               <span v-if="loading" class="spinner-sm white"></span>
-              <span v-else>Додати</span>
+              <span v-else>{{ $t('dialogs.content.add') }}</span>
             </button>
           </div>
         </div>

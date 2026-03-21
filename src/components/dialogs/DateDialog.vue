@@ -5,7 +5,7 @@
         <div class="sheet">
           <div class="sheet-handle"></div>
           <div class="sheet-header">
-            <span>Нова дата</span>
+            <span>{{ $t('dialogs.date.title') }}</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)"><IconClose :size="18" /></button>
           </div>
           <div class="sheet-body">
@@ -15,13 +15,13 @@
               <div class="toggle-track" :class="{ on: form.once }" @click="form.once = !form.once">
                 <div class="toggle-thumb"></div>
               </div>
-              <span>Одноразова подія</span>
+              <span>{{ $t('dialogs.date.oneTime') }}</span>
             </label>
           </div>
           <div class="sheet-footer">
             <button class="btn-accent full" @click="submit" :disabled="!form.name || loading">
               <span v-if="loading" class="spinner-sm white"></span>
-              <span v-else>Зберегти</span>
+              <span v-else>{{ $t('dialogs.date.save') }}</span>
             </button>
           </div>
         </div>

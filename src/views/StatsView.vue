@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onActivated } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useGroupsStore } from '@/stores/group'
 import { memoriesApi } from '@/api/memories'
 import type { StatsResponse, MemoriesContentType } from '@/api/models'
+
+const { t } = useI18n()
 
 const groupsStore = useGroupsStore()
 const stats = ref<StatsResponse | null>(null)
@@ -37,9 +40,9 @@ const load = async (): Promise<void> => {
 }
 
 const CONTENT_LABELS: Record<MemoriesContentType, string> = {
-  ANIME: 'Аніме', CARTOON: 'Мультик', SERIES: 'Серіал', FILM: 'Фільм', HENTAI: 'Хентай'
+  ANIME: 'ANIME', CARTOON: 'CARTOON', SERIES: 'SERIES', FILM: 'FILM', HENTAI: 'HENTAI'
 }
-const contentLabel = (type: MemoriesContentType): string => CONTENT_LABELS[type] ?? type
+const contentLabel = (type: MemoriesContentType): string => t(`stats.contentTypes.${type}`) ?? type
 
 const barWidth = (val: number, obj: Record<string, number>): number => {
   const max = Math.max(...Object.values(obj))
@@ -53,7 +56,7 @@ const weekdayHeight = (val: number, obj: Record<string, number>): number => {
 
 const formatMonth = (ym: string): string => {
   const [year, month] = ym.split('-')
-  const months = ['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру']
+  const months = t('stats.months') as unknown as string[]
   return `${months[parseInt(month) - 1]} ${year}`
 }
 </script>
@@ -61,7 +64,7 @@ const formatMonth = (ym: string): string => {
 <template>
   <div class="stats-view">
     <header class="page-header">
-      <h1>Статистика</h1>
+      <h1>{{ $t('stats.title') }}</h1>
       <select v-if="groupsStore.groups.length > 1" v-model="selectedGroupId" class="group-select" @change="load">
         <option v-for="g in groupsStore.groups" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
@@ -77,19 +80,19 @@ const formatMonth = (ym: string): string => {
       <div class="cards-grid">
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalDays }}</span>
-          <span class="stat-label">Всього записів</span>
+          <span class="stat-label">{{ $t('stats.totalRecords') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalPosts }}</span>
-          <span class="stat-label">Постів</span>
+          <span class="stat-label">{{ $t('stats.posts') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalContents }}</span>
-          <span class="stat-label">Переглянуто</span>
+          <span class="stat-label">{{ $t('stats.watched') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalMedia }}</span>
-          <span class="stat-label">Фото</span>
+          <span class="stat-label">{{ $t('stats.photos') }}</span>
         </div>
       </div>
 
@@ -99,14 +102,14 @@ const formatMonth = (ym: string): string => {
           <span class="streak-icon">🔥</span>
           <div class="streak-body">
             <span class="streak-num">{{ stats.currentStreak }}</span>
-            <span class="streak-label">Поточний стрік</span>
+            <span class="streak-label">{{ $t('stats.currentStreak') }}</span>
           </div>
         </div>
         <div class="streak-card">
           <span class="streak-icon">🏆</span>
           <div class="streak-body">
             <span class="streak-num">{{ stats.longestStreak }}</span>
-            <span class="streak-label">Найдовший стрік</span>
+            <span class="streak-label">{{ $t('stats.longestStreak') }}</span>
           </div>
         </div>
       </div>
@@ -115,25 +118,25 @@ const formatMonth = (ym: string): string => {
       <div class="cards-grid">
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalOnceDates }}</span>
-          <span class="stat-label">Одноразових дат</span>
+          <span class="stat-label">{{ $t('stats.oneTimeDates') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalRecurringDates }}</span>
-          <span class="stat-label">Щорічних дат</span>
+          <span class="stat-label">{{ $t('stats.yearlyDates') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalGroupPosts }}</span>
-          <span class="stat-label">Спільних постів</span>
+          <span class="stat-label">{{ $t('stats.sharedPosts') }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-num">{{ stats.totalPrivatePosts }}</span>
-          <span class="stat-label">Особистих постів</span>
+          <span class="stat-label">{{ $t('stats.personalPosts') }}</span>
         </div>
       </div>
 
       <!-- Топ контент -->
       <div class="section-card" v-if="stats.topContent?.length">
-        <h2 class="section-title">Топ контент</h2>
+        <h2 class="section-title">{{ $t('stats.topContent') }}</h2>
         <div class="top-list">
           <div v-for="(item, i) in stats.topContent" :key="i" class="top-item">
             <span class="top-rank">#{{ i + 1 }}</span>
@@ -151,7 +154,7 @@ const formatMonth = (ym: string): string => {
 
       <!-- Контент за типом -->
       <div class="section-card" v-if="stats.contentByType && Object.keys(stats.contentByType).length">
-        <h2 class="section-title">Контент за типом</h2>
+        <h2 class="section-title">{{ $t('stats.contentByType') }}</h2>
         <div class="bar-list">
           <div v-for="(val, type) in stats.contentByType" :key="type" class="bar-row">
             <span class="bar-label">{{ contentLabel(type as MemoriesContentType) }}</span>
@@ -165,7 +168,7 @@ const formatMonth = (ym: string): string => {
 
       <!-- Записів по місяцях -->
       <div class="section-card" v-if="stats.daysByMonth && Object.keys(stats.daysByMonth).length">
-        <h2 class="section-title">Записів по місяцях</h2>
+        <h2 class="section-title">{{ $t('stats.recordsByMonth') }}</h2>
         <div class="bar-list">
           <div v-for="(val, month) in stats.daysByMonth" :key="month" class="bar-row">
             <span class="bar-label">{{ formatMonth(month) }}</span>
@@ -179,7 +182,7 @@ const formatMonth = (ym: string): string => {
 
       <!-- Пости по місяцях -->
       <div class="section-card" v-if="stats.postsByMonth && Object.keys(stats.postsByMonth).length">
-        <h2 class="section-title">Пости по місяцях</h2>
+        <h2 class="section-title">{{ $t('stats.postsByMonth') }}</h2>
         <div class="bar-list">
           <div v-for="(val, month) in stats.postsByMonth" :key="month" class="bar-row">
             <span class="bar-label">{{ formatMonth(month) }}</span>
@@ -193,7 +196,7 @@ const formatMonth = (ym: string): string => {
 
       <!-- Активність по днях тижня -->
       <div class="section-card" v-if="stats.daysByWeekday">
-        <h2 class="section-title">Активність по днях тижня</h2>
+        <h2 class="section-title">{{ $t('stats.activityByDay') }}</h2>
         <div class="weekday-grid">
           <div v-for="(val, wd) in stats.daysByWeekday" :key="wd" class="weekday-col">
             <span class="weekday-val">{{ val }}</span>
@@ -207,12 +210,12 @@ const formatMonth = (ym: string): string => {
 
       <!-- Найближчі річниці -->
       <div class="section-card" v-if="stats.upcomingDates?.length">
-        <h2 class="section-title">Найближчі річниці</h2>
+        <h2 class="section-title">{{ $t('stats.upcomingAnniversaries') }}</h2>
         <div class="anniversary-list">
           <div v-for="(d, i) in stats.upcomingDates" :key="i" class="anniversary-item">
             <div class="anniversary-days">
               <span class="days-num">{{ d.daysUntil }}</span>
-              <span class="days-label">дн.</span>
+              <span class="days-label">{{ $t('stats.days') }}</span>
             </div>
             <div class="anniversary-body">
               <span class="anniversary-name">{{ d.name }}</span>
@@ -227,7 +230,7 @@ const formatMonth = (ym: string): string => {
 
     <div v-else class="empty-state">
       <span class="empty-icon">📊</span>
-      <p>Немає даних</p>
+      <p>{{ $t('stats.noData') }}</p>
     </div>
   </div>
 </template>

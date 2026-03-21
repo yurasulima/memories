@@ -8,12 +8,12 @@
         <span class="l-logo-text">Memories</span>
       </div>
       <nav class="l-nav">
-        <a href="#features" @click.prevent="scrollTo('features')">Функції</a>
-        <a href="#how"      @click.prevent="scrollTo('how')">Як це працює</a>
-        <a href="#start"    @click.prevent="scrollTo('start')">Початок</a>
+        <a href="#features" @click.prevent="scrollTo('features')">{{ $t('nav.features') }}</a>
+        <a href="#how"      @click.prevent="scrollTo('how')">{{ $t('nav.how') }}</a>
+        <a href="#start"    @click.prevent="scrollTo('start')">{{ $t('nav.start') }}</a>
       </nav>
       <router-link to="/app" class="btn-accent l-cta">
-        Відкрити
+        {{ $t('nav.open') }}
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M2 6.5h9M6.5 2l4.5 4.5L6.5 11"/>
         </svg>
@@ -29,24 +29,22 @@
 
       <div class="l-badge">
         <span class="l-badge-dot"></span>
-        Щоденник для двох
+        {{ $t('landing.badge') }}
       </div>
 
       <h1 class="l-title">
-        Зберігайте<br/>
-        <span class="l-accent">кожен момент</span>
+        {{ $t('landing.hero.title1') }}<br/>
+        <span class="l-accent">{{ $t('landing.hero.title2') }}</span>
       </h1>
-      <p class="l-subtitle">разом, для себе, назавжди</p>
-      <p class="l-desc">
-        Memories — приватний простір для пари. Ведіть хроніку спільного життя: пости, фото, фільми, аніме та важливі дати.
-      </p>
+      <p class="l-subtitle">{{ $t('landing.hero.subtitle') }}</p>
+      <p class="l-desc">{{ $t('landing.hero.desc') }}</p>
 
       <div class="l-hero-btns">
         <router-link to="/app" class="btn-accent" style="font-size:15px;padding:14px 28px;">
-          Почати зараз
+          {{ $t('landing.hero.cta') }}
         </router-link>
         <a href="#features" class="btn-outline" @click.prevent="scrollTo('features')">
-          Дізнатись більше
+          {{ $t('landing.hero.more') }}
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M6.5 2v9M2 7l4.5 4 4.5-4"/>
           </svg>
@@ -70,12 +68,12 @@
               <IconHeart :size="14" :filled="true" class="lm-icon" />
               <span class="lm-title">Memories</span>
             </div>
-            <span class="lm-group">Ми</span>
+            <span class="lm-group">{{ $t('landing.mockup.group') }}</span>
           </div>
 
           <div class="lm-search">
             <span>🔍</span>
-            <span class="lm-search-ph">Пошук постів, контенту, дат...</span>
+            <span class="lm-search-ph">{{ $t('landing.mockup.searchPlaceholder') }}</span>
           </div>
 
           <div class="lm-year"><span class="lm-year-lbl">2026</span></div>
@@ -96,14 +94,14 @@
                 <span class="lm-x">✕</span>
               </div>
               <div v-for="item in day.items" :key="item.name" class="lm-card">
-                <span :class="['lm-badge', item.type]">{{ contentLabel(item.type) }}</span>
+                <span :class="['lm-badge', item.type]">{{ $t(`landing.contentTypes.${item.type}`) }}</span>
                 <span class="lm-name">{{ item.name }}</span>
                 <span v-if="item.ep" class="lm-ep">{{ item.ep }}</span>
               </div>
               <div class="lm-actions">
-                <span class="lm-abtn">+ Пост</span>
-                <span class="lm-abtn">+ Дата</span>
-                <span class="lm-abtn">+ Контент</span>
+                <span class="lm-abtn">+ {{ $t('home.addPost') }}</span>
+                <span class="lm-abtn">+ {{ $t('home.addDate') }}</span>
+                <span class="lm-abtn">+ {{ $t('home.addContent') }}</span>
               </div>
             </div>
           </div>
@@ -111,7 +109,7 @@
           <div class="lm-nav">
             <div class="lm-nav-item active">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="var(--accent)"><path d="M8 1L1 7h2v7h4v-4h2v4h4V7h2z"/></svg>
-              <span style="color:var(--accent)">Стрічка</span>
+              <span style="color:var(--accent)">{{ $t('landing.mockup.feed') }}</span>
             </div>
             <div class="lm-nav-item">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
@@ -119,14 +117,14 @@
                 <rect x="6.5" y="5" width="3" height="9" rx="1"/>
                 <rect x="11" y="2" width="3" height="12" rx="1"/>
               </svg>
-              <span>Статистика</span>
+              <span>{{ $t('landing.mockup.stats') }}</span>
             </div>
             <div class="lm-nav-item">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text-muted)" stroke-width="1.4" stroke-linecap="round">
                 <circle cx="8" cy="8" r="2"/>
                 <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M11.4 4.6l-1.4 1.4M4.6 11.4L3.2 12.8"/>
               </svg>
-              <span>Налаштування</span>
+              <span>{{ $t('landing.mockup.settings') }}</span>
             </div>
           </div>
 
@@ -136,15 +134,15 @@
 
     <!-- ── FEATURES ── -->
     <section id="features" class="l-section">
-      <p class="l-eyebrow">Можливості</p>
-      <h2 class="l-stitle">Все для вашої <span class="l-accent">спільної хроніки</span></h2>
-      <p class="l-ssub">Від тексту до фото, від фільмів до важливих дат — один застосунок для всього вашого спільного життя.</p>
+      <p class="l-eyebrow">{{ $t('landing.features.eyebrow') }}</p>
+      <h2 class="l-stitle">{{ $t('landing.features.title1') }} <span class="l-accent">{{ $t('landing.features.title2') }}</span></h2>
+      <p class="l-ssub">{{ $t('landing.features.sub') }}</p>
 
       <div class="l-feat-grid">
-        <div v-for="f in features" :key="f.title" class="l-feat-card">
+        <div v-for="f in features" :key="f.key" class="l-feat-card">
           <div class="l-feat-icon" v-html="f.icon"></div>
-          <div class="l-feat-title">{{ f.title }}</div>
-          <div class="l-feat-desc">{{ f.desc }}</div>
+          <div class="l-feat-title">{{ $t(`landing.features.items.${f.key}.title`) }}</div>
+          <div class="l-feat-desc">{{ $t(`landing.features.items.${f.key}.desc`) }}</div>
         </div>
       </div>
     </section>
@@ -152,13 +150,13 @@
     <!-- ── HOW IT WORKS ── -->
     <div id="how" class="l-how-wrap">
       <div class="l-section">
-        <p class="l-eyebrow">Як це працює</p>
-        <h2 class="l-stitle">Три кроки і ви <span class="l-accent">вже в темі</span></h2>
+        <p class="l-eyebrow">{{ $t('landing.how.eyebrow') }}</p>
+        <h2 class="l-stitle">{{ $t('landing.how.title1') }} <span class="l-accent">{{ $t('landing.how.title2') }}</span></h2>
         <div class="l-steps">
           <div v-for="s in steps" :key="s.n" class="l-step">
-            <div class="l-step-n">Крок {{ s.n }}</div>
-            <div class="l-step-title">{{ s.title }}</div>
-            <div class="l-step-desc">{{ s.desc }}</div>
+            <div class="l-step-n">{{ $t('landing.how.step') }} {{ s.n }}</div>
+            <div class="l-step-title">{{ $t(`landing.how.steps.${s.n}.title`) }}</div>
+            <div class="l-step-desc">{{ $t(`landing.how.steps.${s.n}.desc`) }}</div>
           </div>
         </div>
       </div>
@@ -166,13 +164,13 @@
 
     <!-- ── CONTENT TYPES ── -->
     <section class="l-section">
-      <p class="l-eyebrow">Що можна зберігати</p>
-      <h2 class="l-stitle">Кожна деталь <span class="l-accent">вашого спільного життя</span></h2>
+      <p class="l-eyebrow">{{ $t('landing.chips.eyebrow') }}</p>
+      <h2 class="l-stitle">{{ $t('landing.chips.title1') }} <span class="l-accent">{{ $t('landing.chips.title2') }}</span></h2>
       <div class="l-chips">
-        <div v-for="chip in chips" :key="chip.label" class="l-chip">
+        <div v-for="chip in chips" :key="chip.key" class="l-chip">
           <div class="l-chip-dot" :style="{ background: chip.color }"></div>
-          <span>{{ chip.label }}</span>
-          <span class="l-chip-sub">{{ chip.sub }}</span>
+          <span>{{ $t(`landing.chips.items.${chip.key}.label`) }}</span>
+          <span class="l-chip-sub">{{ $t(`landing.chips.items.${chip.key}.sub`) }}</span>
         </div>
       </div>
     </section>
@@ -181,23 +179,23 @@
     <section class="l-quote-wrap">
       <div class="l-quote-bg">❝</div>
       <p class="l-quote-text">
-        Маленькі моменти — це і є ваша спільна <span class="l-accent">історія</span>.<br/>
-        Не втрачайте жодного з них.
+        {{ $t('landing.quote.text1') }} <span class="l-accent">{{ $t('landing.quote.accent') }}</span>.<br/>
+        {{ $t('landing.quote.text2') }}
       </p>
-      <p class="l-quote-author">Memories — для тих, хто цінує кожен день</p>
+      <p class="l-quote-author">{{ $t('landing.quote.author') }}</p>
     </section>
 
     <!-- ── CTA ── -->
     <section id="start" class="l-cta-wrap">
       <div class="l-cta-glow"></div>
       <h2 class="l-stitle" style="font-size:clamp(30px,6vw,56px);margin-bottom:14px;">
-        Починається<br/><span class="l-accent">сьогодні</span>
+        {{ $t('landing.cta.title1') }}<br/><span class="l-accent">{{ $t('landing.cta.title2') }}</span>
       </h2>
       <p class="l-ssub" style="max-width:100%;margin-bottom:40px;">
-        Створіть свій перший день і почніть будувати архів вашої любові.
+        {{ $t('landing.cta.sub') }}
       </p>
       <router-link to="/app" class="btn-accent" style="font-size:15px;padding:14px 32px;">
-        Відкрити Memories
+        {{ $t('landing.cta.btn') }}
         <svg width="14" height="14" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M2 6.5h9M6.5 2l4.5 4.5L6.5 11"/>
         </svg>
@@ -210,7 +208,7 @@
         <IconHeart :size="16" :filled="true" class="l-logo-icon" />
         <span class="l-logo-text" style="font-size:14px;">Memories</span>
       </div>
-      <span class="l-footer-copy">Тільки для вас двох ♥</span>
+      <span class="l-footer-copy">{{ $t('landing.footer.copy') }}</span>
     </footer>
 
   </div>
@@ -218,7 +216,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import IconHeart from '../components/icons/IconHeart.vue'
+
+const { t } = useI18n()
 
 // ── Header scroll shrink ──────────────────────────────────────────────────────
 const isScrolled = ref(false)
@@ -261,49 +262,42 @@ const mockDays = [
   },
 ]
 
-const contentLabel = (type) =>
-  ({ film: 'Фільм', hentai: 'Хентай', cartoon: 'Мультик', anime: 'Аніме', series: 'Серіал' }[type] || type)
-
-// ── Features ──────────────────────────────────────────────────────────────────
+// ── Features (key-based, text comes from i18n) ────────────────────────────────
 const features = [
   {
-    title: 'Стрічка спогадів',
-    desc:  'Хронологічна лента з усіма вашими днями. Прокручуй назад і переживай найкращі моменти знову.',
-    icon:  `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20S3 14.5 3 8.5a8 8 0 0116 0C19 14.5 11 20 11 20z"/></svg>`
+    key: 'feed',
+    icon: `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20S3 14.5 3 8.5a8 8 0 0116 0C19 14.5 11 20 11 20z"/></svg>`
   },
   {
-    title: 'Важливі дати',
-    desc:  'Зберігайте річниці та особливі події. Позначайте одноразові або щорічні — застосунок не забуде.',
-    icon:  `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="16" height="14" rx="2"/><path d="M7 2v4M15 2v4M3 10h16"/></svg>`
+    key: 'dates',
+    icon: `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="16" height="14" rx="2"/><path d="M7 2v4M15 2v4M3 10h16"/></svg>`
   },
   {
-    title: 'Контент разом',
-    desc:  'Фільми, серіали, аніме, мультики. Відслідковуйте що дивитесь разом — з епізодами та сезонами.',
-    icon:  `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h6M11 17v4"/><path d="M7 10l3 2.5L15 7"/></svg>`
+    key: 'content',
+    icon: `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="18" height="14" rx="2"/><path d="M8 21h6M11 17v4"/><path d="M7 10l3 2.5L15 7"/></svg>`
   },
   {
-    title: 'Пости з медіа',
-    desc:  'Текст, фото та відео до кожного дня. Приватно для себе або видимо для обох.',
-    icon:  `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`
+    key: 'posts',
+    icon: `<svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`
   },
 ]
 
-// ── Steps ─────────────────────────────────────────────────────────────────────
+// ── Steps (key-based) ─────────────────────────────────────────────────────────
 const steps = [
-  { n: '01', title: 'Створіть групу',        desc: 'Зареєструйтесь і запросіть партнера. Разом ви отримуєте спільний простір, доступний тільки вам двом.' },
-  { n: '02', title: 'Додайте перший день',    desc: 'Натисніть «+» і оберіть дату. Додайте пост, фото, відмітьте що дивились — заповніть день своїми словами.' },
-  { n: '03', title: 'Повертайтесь і згадуйте', desc: 'Прокручуйте стрічку або шукайте за словами і датами. Кожен спогад чекає на вас — завжди.' },
+  { n: '1' },
+  { n: '2' },
+  { n: '3' },
 ]
 
-// ── Chips ─────────────────────────────────────────────────────────────────────
+// ── Chips (key-based) ─────────────────────────────────────────────────────────
 const chips = [
-  { label: 'Аніме',          sub: 'з епізодами',       color: 'var(--anime-text)'   },
-  { label: 'Серіали',        sub: 'сезони та серії',   color: 'var(--series-text)'  },
-  { label: 'Фільми',         sub: 'вдома чи в кіно',   color: 'var(--film-text)'    },
-  { label: 'Мультфільми',    sub: 'та хентай',         color: 'var(--cartoon-text)' },
-  { label: 'Важливі дати',   sub: 'річниці та події',  color: 'var(--accent)'       },
-  { label: 'Фото та відео',  sub: 'у постах до дня',   color: 'var(--accent-hover)' },
-  { label: 'Текстові нотатки', sub: 'думки та почуття', color: '#9ab8f0'            },
+  { key: 'anime',   color: 'var(--anime-text)'   },
+  { key: 'series',  color: 'var(--series-text)'  },
+  { key: 'films',   color: 'var(--film-text)'    },
+  { key: 'cartoon', color: 'var(--cartoon-text)' },
+  { key: 'dates',   color: 'var(--accent)'       },
+  { key: 'media',   color: 'var(--accent-hover)' },
+  { key: 'notes',   color: '#9ab8f0'             },
 ]
 
 onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
@@ -349,7 +343,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 .l-nav a:hover { color: var(--text); }
 
-/* mirrors .btn-accent from App.vue */
 .btn-accent {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--accent); color: white;
@@ -361,7 +354,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .btn-accent:hover { background: var(--accent-hover); transform: translateY(-1px); }
 .btn-accent:active { transform: scale(0.96); }
 
-/* mirrors .card-action-btn from HomeView.vue */
 .btn-outline {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 13px; font-weight: 600; color: var(--text-muted);
@@ -476,7 +468,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 .l-phone-screen { padding: 44px 14px 0; display: flex; flex-direction: column; }
 
-/* phone internals — mirror exact app CSS */
 .lm-header { display:flex; align-items:center; justify-content:space-between; padding:10px 6px; border-bottom:1px solid var(--border); margin-bottom:8px; }
 .lm-header-left { display:flex; align-items:center; gap:7px; }
 .lm-icon { color: var(--accent); }

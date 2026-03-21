@@ -42,6 +42,8 @@ const showConfirmDelete = ref<boolean>(false)
 const pendingDeleteId = ref<number | null>(null)
 const dialogs = ref<Dialogs>({ post: false, content: false, date: false })
 const dialogTargetDay = ref<DayResponse | null>(null)
+const dropdownOpen = ref<boolean>(false)
+const dropdownRef = ref<HTMLElement | null>(null)
 
 // Search
 const searchQuery = ref<string>('')
@@ -62,6 +64,7 @@ const handleScroll = (): void => {
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll, { passive: true })
+  document.addEventListener('click', onClickOutside)
   await groupsStore.fetchMyGroups()
   if (groupsStore.currentGroup) {
     selectedGroupId.value = groupsStore.currentGroup.id
@@ -71,8 +74,26 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  document.removeEventListener('click', onClickOutside)
   if (searchTimeout) clearTimeout(searchTimeout)
 })
+
+const onClickOutside = (e: MouseEvent): void => {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+    dropdownOpen.value = false
+  }
+}
+
+const selectStream = async (g: any): Promise<void> => {
+  dropdownOpen.value = false
+  if (groupsStore.currentGroup?.id === g.id) return
+  groupsStore.setCurrentGroup(g)
+  selectedGroupId.value = g.id
+  days.value = []
+  page.value = 0
+  hasMore.value = true
+  await loadDays()
+}
 
 // ── Computed ─────────────────────────────────────────────────────────────────
 const displayDays = computed<DayResponse[]>(() =>
@@ -233,7 +254,8 @@ const createDay = async (date: string): Promise<void> => {
 const createGroup = async ({ name, partner }: CreateGroupPayload): Promise<void> => {
   createLoading.value = true
   try {
-    await groupsStore.createGroup({ name, memberIds: [partner.id] })
+    const memberIds = partner ? [partner.id] : []
+    await groupsStore.createGroup({ name, memberIds })
     showCreateGroup.value = false
     days.value = []
     page.value = 0
@@ -276,10 +298,43 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
         <h1>Memories</h1>
       </div>
       <div class="header-right">
-        <select v-if="groupsStore.groups.length > 1" v-model="selectedGroupId" class="group-select" @change="onGroupChange">
-          <option v-for="g in groupsStore.groups" :key="g.id" :value="g.id">{{ g.name }}</option>
-        </select>
-        <span v-else-if="groupsStore.currentGroup" class="group-name">{{ groupsStore.currentGroup.name }}</span>
+        <!-- Кнопка створення коли стрічок немає -->
+        <button
+          v-if="groupsStore.groups.length === 0 && !groupsStore.loading"
+          class="stream-pill new-stream-btn"
+          @click="showCreateGroup = true"
+        >
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
+          <span>{{ $t('home.createGroup') }}</span>
+        </button>
+
+        <!-- Dropdown для вибору стрічки -->
+        <div v-if="groupsStore.groups.length > 0" class="stream-dropdown-wrap" ref="dropdownRef">
+          <button class="stream-pill" @click="dropdownOpen = !dropdownOpen">
+            <span class="stream-pill-name">{{ groupsStore.currentGroup?.name }}</span>
+            <svg class="stream-pill-chevron" :class="{ open: dropdownOpen }" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg>
+          </button>
+          <transition name="dropdown-fade">
+            <div v-if="dropdownOpen" class="stream-dropdown">
+              <button
+                v-for="g in groupsStore.groups"
+                :key="g.id"
+                class="stream-dropdown-item"
+                :class="{ active: groupsStore.currentGroup?.id === g.id }"
+                @click="selectStream(g)"
+              >
+                <span class="stream-dot"></span>
+                <span>{{ g.name }}</span>
+                <svg v-if="groupsStore.currentGroup?.id === g.id" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><path d="M2 7l3.5 3.5L12 3"/></svg>
+              </button>
+              <div class="stream-dropdown-divider"></div>
+              <button class="stream-dropdown-item new" @click="dropdownOpen = false; showCreateGroup = true">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>
+                <span>{{ $t('home.createGroup') }}</span>
+              </button>
+            </div>
+          </transition>
+        </div>
       </div>
     </header>
 
@@ -290,7 +345,7 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
         <input
             v-model="searchQuery"
             class="search-bar-input"
-            placeholder="Пошук постів, контенту, дат..."
+            :placeholder="$t('home.searchPlaceholder')"
             @input="onSearchInput"
         />
         <button v-if="searchQuery" class="search-bar-clear" @click="clearSearch">
@@ -302,8 +357,8 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
     <!-- NO GROUP -->
     <div v-if="!groupsStore.currentGroup && !groupsStore.loading" class="empty-state">
       <div class="empty-icon">💝</div>
-      <p class="empty-title">Ще немає групи</p>
-      <button class="btn-accent" @click="showCreateGroup = true">Створити групу</button>
+      <p class="empty-title">{{ $t('home.noGroup') }}</p>
+      <button class="btn-accent" @click="showCreateGroup = true">{{ $t('home.createGroup') }}</button>
     </div>
 
     <div v-else>
@@ -324,15 +379,15 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
       <!-- NO RESULTS -->
       <div v-else-if="searchQuery && searchResults.length === 0 && !searchLoading" class="empty-state">
         <div class="empty-icon">🔍</div>
-        <p class="empty-title">Нічого не знайдено</p>
-        <p class="empty-sub">Спробуй інший запит</p>
+        <p class="empty-title">{{ $t('home.noResults') }}</p>
+        <p class="empty-sub">{{ $t('home.noResultsSub') }}</p>
       </div>
 
       <!-- EMPTY DAYS -->
       <div v-else-if="!searchQuery && days.length === 0 && !loading" class="empty-state">
         <div class="empty-icon">📖</div>
-        <p class="empty-title">Поки немає спогадів</p>
-        <p class="empty-sub">Натисни + щоб додати перший день</p>
+        <p class="empty-title">{{ $t('home.noMemories') }}</p>
+        <p class="empty-sub">{{ $t('home.noMemoriesSub') }}</p>
       </div>
 
       <!-- TIMELINE -->
@@ -419,9 +474,9 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
               </div>
 
               <div class="card-actions">
-                <button class="card-action-btn" @click="openDialog('post', day)"><IconPlus :size="13" /><span>Пост</span></button>
-                <button class="card-action-btn" @click="openDialog('date', day)"><IconPlus :size="13" /><span>Дата</span></button>
-                <button class="card-action-btn" @click="openDialog('content', day)"><IconPlus :size="13" /><span>Контент</span></button>
+                <button class="card-action-btn" @click="openDialog('post', day)"><IconPlus :size="13" /><span>{{ $t('home.addPost') }}</span></button>
+                <button class="card-action-btn" @click="openDialog('date', day)"><IconPlus :size="13" /><span>{{ $t('home.addDate') }}</span></button>
+                <button class="card-action-btn" @click="openDialog('content', day)"><IconPlus :size="13" /><span>{{ $t('home.addContent') }}</span></button>
               </div>
             </div>
           </div>
@@ -436,7 +491,7 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
 
         <!-- END OF LIST -->
         <div v-if="!hasMore && !loading && !searchQuery && days.length > 0" class="end-of-list">
-          <span>✨ Це всі спогади</span>
+          <span>{{ $t('home.endContent') }}</span>
         </div>
 
       </div>
@@ -471,7 +526,50 @@ const isNewYear      = (day: DayResponse, index: number): boolean =>
 .header-left { display: flex; align-items: center; gap: 9px; }
 .logo-icon { color: var(--accent); }
 .home-header h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--accent), var(--accent-hover, var(--accent))); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.group-select { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 13px; color: var(--text); max-width: 130px; outline: none; }
+/* ── Stream dropdown ── */
+.stream-dropdown-wrap { position: relative; }
+
+.stream-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 12px;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+  max-width: 160px;
+}
+.stream-pill:hover { border-color: var(--accent); }
+.new-stream-btn { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+.new-stream-btn:hover { background: var(--accent); color: white; }
+.stream-pill-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px; }
+.stream-pill-chevron { flex-shrink: 0; color: var(--text-muted); transition: transform 0.2s; }
+.stream-pill-chevron.open { transform: rotate(180deg); }
+
+.stream-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 180px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  z-index: 50; overflow: hidden; padding: 6px;
+}
+
+.stream-dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 12px; border-radius: 10px;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  transition: background 0.15s; text-align: left;
+}
+
+.stream-dropdown-item:hover { background: var(--bg-secondary); }
+.stream-dropdown-item.active { color: var(--accent); font-weight: 700; }
+.stream-dropdown-item.new { color: var(--text-muted); font-size: 13px; }
+.stream-dropdown-item.new:hover { color: var(--accent); background: var(--accent-light); }
+.stream-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.stream-dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+.dropdown-fade-enter-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.dropdown-fade-leave-active { transition: opacity 0.1s ease, transform 0.1s ease; }
+.dropdown-fade-enter-from, .dropdown-fade-leave-to { opacity: 0; transform: translateY(-6px); }
+
 .group-name { font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
 /* ── Search bar ── */

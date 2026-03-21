@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useGroupsStore } from '@/stores/group'
 import type { MemoriesRegisterRequest } from '@/api/models'
 import IconHeart from '../components/icons/IconHeart.vue'
 import IconEye from '../components/icons/IconEye.vue'
@@ -17,8 +19,10 @@ interface AuthForm {
   password: string
 }
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
+const groupsStore = useGroupsStore()
 
 const tab = ref<Tab>('login')
 const showPass = ref<boolean>(false)
@@ -38,6 +42,7 @@ const DEMO_PASSWORD = 'demo1234'
 const submit = async (): Promise<void> => {
   error.value = ''
   loading.value = true
+  groupsStore.reset()
   try {
     if (tab.value === 'login') {
       await auth.login(form.value.email, form.value.password)
@@ -53,7 +58,7 @@ const submit = async (): Promise<void> => {
     await router.push('/app')
   } catch (e) {
     const err = e as AxiosError<{ message?: string }>
-    error.value = err.response?.data?.message || 'Помилка. Перевірте дані.'
+    error.value = err.response?.data?.message || t('auth.errors.default')
   } finally {
     loading.value = false
   }
@@ -62,17 +67,17 @@ const submit = async (): Promise<void> => {
 const loginDemo = async (): Promise<void> => {
   error.value = ''
   loading.value = true
+  groupsStore.reset()
   try {
     await auth.login(DEMO_EMAIL, DEMO_PASSWORD)
     await router.push('/app')
   } catch {
-    error.value = 'Демо-аккаунт недоступний.'
+    error.value = t('auth.errors.demoUnavailable')
   } finally {
     loading.value = false
   }
 }
 </script>
-
 
 <template>
   <div class="auth-page">
@@ -83,25 +88,25 @@ const loginDemo = async (): Promise<void> => {
       </div>
 
       <div class="auth-tabs">
-        <button :class="{ active: tab === 'login' }" @click="tab = 'login'">Вхід</button>
-        <button :class="{ active: tab === 'register' }" @click="tab = 'register'">Реєстрація</button>
+        <button :class="{ active: tab === 'login' }" @click="tab = 'login'">{{ $t('auth.login') }}</button>
+        <button :class="{ active: tab === 'register' }" @click="tab = 'register'">{{ $t('auth.register') }}</button>
       </div>
 
       <form @submit.prevent="submit" class="auth-form">
         <div v-if="tab === 'register'" class="field">
-          <label>Повне ім'я</label>
-          <input v-model="form.fullName" type="text" placeholder="Ім'я Прізвище" required />
+          <label>{{ $t('auth.fullName') }}</label>
+          <input v-model="form.fullName" type="text" :placeholder="$t('auth.fullNamePlaceholder')" required />
         </div>
         <div v-if="tab === 'register'" class="field">
-          <label>Ім'я користувача</label>
+          <label>{{ $t('auth.username') }}</label>
           <input v-model="form.username" type="text" placeholder="username" required />
         </div>
         <div class="field">
-          <label>Email</label>
+          <label>{{ $t('auth.email') }}</label>
           <input v-model="form.email" type="email" placeholder="you@example.com" required />
         </div>
         <div class="field">
-          <label>Пароль</label>
+          <label>{{ $t('auth.password') }}</label>
           <div class="password-wrap">
             <input v-model="form.password" :type="showPass ? 'text' : 'password'" placeholder="••••••••" required />
             <button type="button" class="eye-btn" @click="showPass = !showPass">
@@ -114,22 +119,20 @@ const loginDemo = async (): Promise<void> => {
         <p v-if="error" class="error-msg">{{ error }}</p>
 
         <button type="submit" class="submit-btn" :disabled="loading">
-          <span v-if="loading">...</span>
-          <span v-else>{{ tab === 'login' ? 'Увійти' : 'Зареєструватись' }}</span>
+          <span v-if="loading">{{ $t('auth.loading') }}</span>
+          <span v-else>{{ tab === 'login' ? $t('auth.submitLogin') : $t('auth.submitRegister') }}</span>
         </button>
 
-        <div class="divider"><span>або</span></div>
+        <div class="divider"><span>{{ $t('auth.or') }}</span></div>
 
         <button type="button" class="demo-btn" :disabled="loading" @click="loginDemo">
-          <span v-if="loading">...</span>
-          <span v-else>Увійти як демо</span>
+          <span v-if="loading">{{ $t('auth.demoLoading') }}</span>
+          <span v-else>{{ $t('auth.demoLogin') }}</span>
         </button>
       </form>
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .auth-page {
@@ -219,18 +222,10 @@ const loginDemo = async (): Promise<void> => {
   transition: border-color 0.2s;
 }
 
-.field input:focus {
-  border-color: var(--accent);
-}
+.field input:focus { border-color: var(--accent); }
 
-.password-wrap {
-  position: relative;
-}
-
-.password-wrap input {
-  width: 100%;
-  padding-right: 42px;
-}
+.password-wrap { position: relative; }
+.password-wrap input { width: 100%; padding-right: 42px; }
 
 .eye-btn {
   position: absolute;
@@ -259,13 +254,8 @@ const loginDemo = async (): Promise<void> => {
   transition: background 0.2s, opacity 0.2s;
 }
 
-.submit-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-.submit-btn:disabled {
-  opacity: 0.6;
-}
+.submit-btn:hover:not(:disabled) { background: var(--accent-hover); }
+.submit-btn:disabled { opacity: 0.6; }
 
 .divider {
   display: flex;
@@ -294,11 +284,6 @@ const loginDemo = async (): Promise<void> => {
   transition: background 0.2s, opacity 0.2s;
 }
 
-.demo-btn:hover:not(:disabled) {
-  background: var(--border);
-}
-
-.demo-btn:disabled {
-  opacity: 0.6;
-}
+.demo-btn:hover:not(:disabled) { background: var(--border); }
+.demo-btn:disabled { opacity: 0.6; }
 </style>

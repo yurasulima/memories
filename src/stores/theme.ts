@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-type Theme = 'white' | 'pastel' | 'dark' | 'dark-pastel'
+type Theme = 'white' | 'pastel' | 'dark' | 'dark-pastel' | 'ocean' | 'forest' | 'sunset' | 'midnight' | 'rose' | 'mint' | 'sky' | 'amoled'
 
 export const useThemeStore = defineStore('theme', () => {
-  const themes: Theme[] = ['white', 'pastel', 'dark', 'dark-pastel']
+  const themes: Theme[] = ['white', 'pastel', 'dark', 'dark-pastel', 'ocean', 'forest', 'sunset', 'midnight', 'rose', 'mint', 'sky', 'amoled']
   const theme = ref<Theme>((localStorage.getItem('theme') as Theme) || 'dark')
 
   const setTheme = (newTheme: Theme): void => {

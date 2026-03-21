@@ -181,7 +181,7 @@ const submit = async () => {
               @touchend="onTouchEnd"
           ></div>
           <div class="sheet-header">
-            <span>Новий пост</span>
+            <span>{{ $t('dialogs.post.title') }}</span>
             <button class="sheet-close" @click="$emit('update:modelValue', false)">
               <IconClose :size="18" />
             </button>
@@ -226,7 +226,7 @@ const submit = async () => {
 
             <div class="sheet-row">
               <button class="sheet-media-btn" @click="fileInput?.click()">
-                <IconImage :size="16" /><span>Медіа</span>
+                <IconImage :size="16" /><span>{{ $t('dialogs.post.media') }}</span>
               </button>
               <select v-model="form.visibility" class="sheet-select">
                 <option value="GROUP">👥 Група</option>
@@ -242,7 +242,7 @@ const submit = async () => {
                 @click="submit"
             >
               <span v-if="loading" class="spinner-sm white"></span>
-              <span v-else>Опублікувати</span>
+              <span v-else>{{ $t('dialogs.post.publish') }}</span>
             </button>
           </div>
         </div>
