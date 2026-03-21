@@ -207,7 +207,7 @@
     "group": "Memory streams",
     "about": "About",
     "owner": "owner",
-    "members": "{count} members",
+    "members": "members",
     "noGroup": "No active stream",
     "logout": "Sign out",
     "aboutText1": "Memories is a small project for saving shared moments, photos and stories. We build it for couples and close people, so their memories are always close.",

@@ -1,13 +1,13 @@
 <template>
   <div :class="themeStore.theme" class="app">
-    <router-view />
+    <router-view/>
   </div>
 </template>
 
 <script setup lang="ts">
 import {onMounted, ref, watch} from 'vue'
-import { useThemeStore } from './stores/theme.js'
-import { StatusBar, Style } from '@capacitor/status-bar'
+import {useThemeStore} from './stores/theme.js'
+import {StatusBar, Style} from '@capacitor/status-bar'
 import {Capacitor} from "@capacitor/core";
 
 const themeStore = useThemeStore()
@@ -18,19 +18,19 @@ watch(
       if (oldTheme) document.body.classList.remove(oldTheme)
       if (newTheme) document.body.classList.add(newTheme)
     },
-    { immediate: true }
+    {immediate: true}
 )
 
-  onMounted(async () => {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await StatusBar.setOverlaysWebView({ overlay: false })
-        await StatusBar.setStyle({ style: Style.Dark })
-      } catch (e) {
-        console.warn('StatusBar not available:', e)
-      }
+onMounted(async () => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await StatusBar.setOverlaysWebView({overlay: false})
+      await StatusBar.setStyle({style: Style.Dark})
+    } catch (e) {
+      console.warn('StatusBar not available:', e)
     }
-  })
+  }
+})
 
 </script>
 
@@ -119,7 +119,6 @@ body {
 }
 
 
-
 .white, .pastel {
   --anime-bg: #d0e7ff;
   --anime-text: #1a73e8;
@@ -154,8 +153,6 @@ body {
   --film-bg: #352618;
   --film-text: #ffb74d;
 }
-
-
 
 
 /* ── Ocean ── deep dark teal */
