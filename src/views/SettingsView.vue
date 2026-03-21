@@ -137,7 +137,7 @@
             {{ $t('settings.support') }}
           </a>
           <a class="contact-btn" href="https://t.me/ImMurMurCat" target="_blank">
-            {{ $t('settings.telegram') }}
+            Telegram: @ImMurMurCat
           </a>
         </div>
       </div>
