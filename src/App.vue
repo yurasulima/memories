@@ -12,8 +12,6 @@ import {Capacitor} from "@capacitor/core";
 
 const themeStore = useThemeStore()
 
-const appInsets = ref({ top: 0, bottom: 0 })
-
 watch(
     () => themeStore.theme,
     (newTheme, oldTheme) => {
@@ -22,8 +20,6 @@ watch(
     },
     { immediate: true }
 )
-onMounted(async () => {
-
 
   onMounted(async () => {
     if (Capacitor.isNativePlatform()) {
@@ -36,7 +32,6 @@ onMounted(async () => {
     }
   })
 
-})
 </script>
 
 <style>
