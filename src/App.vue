@@ -8,7 +8,7 @@
 import {onMounted, ref, watch} from 'vue'
 import { useThemeStore } from './stores/theme.js'
 import { StatusBar, Style } from '@capacitor/status-bar'
-import { SafeArea } from 'capacitor-plugin-safe-area'
+import {Capacitor} from "@capacitor/core";
 
 const themeStore = useThemeStore()
 
@@ -25,10 +25,16 @@ watch(
 onMounted(async () => {
 
 
-
-  // 1. Edge-to-edge через StatusBar
-  await StatusBar.setOverlaysWebView({ overlay: false })
-  await StatusBar.setStyle({ style: Style.Dark })
+  onMounted(async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: false })
+        await StatusBar.setStyle({ style: Style.Dark })
+      } catch (e) {
+        console.warn('StatusBar not available:', e)
+      }
+    }
+  })
 
 })
 </script>
