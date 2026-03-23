@@ -53,7 +53,7 @@
       "step": "Step",
       "steps": {
         "1": {
-          "title": "Create a group",
+          "title": "Create a stream",
           "desc": "Sign up and invite your partner. Together you get a shared space accessible only to the two of you."
         },
         "2": {
@@ -111,7 +111,8 @@
       "title1": "It starts",
       "title2": "today",
       "sub": "Create your first day and start building an archive of your love.",
-      "btn": "Open Memories"
+      "btn": "Open Memories",
+      "note": "Free. No ads. Just for the two of you."
     },
     "footer": {
       "copy": "Just for the two of you ♥"
@@ -122,6 +123,83 @@
       "cartoon": "Cartoon",
       "anime": "Anime",
       "series": "Series"
+    },
+    "nav": {
+      "privacy": "Privacy",
+      "faq": "FAQ"
+    },
+    "trust": {
+      "free": "Free",
+      "private": "Private",
+      "noAds": "No Ads"
+    },
+    "privacy": {
+      "eyebrow": "Privacy",
+      "title1": "Your memories —",
+      "title2": "only yours",
+      "sub": "Memories is built for two. We don't sell your data, show ads, or read your memories.",
+      "points": {
+        "onlyTwo": {
+          "title": "Only the two of you",
+          "desc": "Content in your space is accessible only to you and your partner — no one else."
+        },
+        "noSell": {
+          "title": "No data selling",
+          "desc": "We never sell or share your personal data with third parties for advertising or analytics."
+        },
+        "encrypted": {
+          "title": "Encrypted data",
+          "desc": "All your data is transmitted and stored encrypted. Your privacy is protected technically."
+        },
+        "noAds": {
+          "title": "Zero ads",
+          "desc": "Memories is your personal space — no banners, trackers, or advertising algorithms."
+        },
+        "yourData": {
+          "title": "Your data is yours",
+          "desc": "You can always export or delete all your data. No restrictions, no hidden terms."
+        },
+        "deleteRight": {
+          "title": "Right to deletion",
+          "desc": "Delete your account at any time — all your data will be permanently erased from our servers."
+        }
+      },
+      "policy": {
+        "title": "Our privacy principle",
+        "text": "Memories is a private space for couples, not a data monetization platform. We don't track your behavior for ads, share data with third parties, or read your content. Your memories are exclusively yours. If you have questions about data processing — contact us directly."
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title1": "Frequently asked",
+      "title2": "questions",
+      "sub": "Can't find an answer? Contact us directly.",
+      "items": {
+        "free": {
+          "q": "Is Memories free?",
+          "a": "Yes, Memories is completely free. We charge nothing and show no ads. Our priority is your experience, not monetization."
+        },
+        "who": {
+          "q": "Who is this app for?",
+          "a": "Memories is built for couples who want to save shared memories: movies, series, anime, important dates, and personal posts. A private journal for two."
+        },
+        "private": {
+          "q": "Can other people see my data?",
+          "a": "No. Your content is accessible only to you and your partner in the stream. Neither administrators nor third parties have access to your memories."
+        },
+        "data": {
+          "q": "What data do you collect?",
+          "a": "We collect the minimum data needed for the app: email for authentication, and the content you add yourself. We don't collect behavioral data for advertising."
+        },
+        "devices": {
+          "q": "Can I use it on multiple devices?",
+          "a": "Yes. Memories is available in the browser and as a native mobile app. Your data syncs across all devices in real time."
+        },
+        "delete": {
+          "q": "How do I delete my account and data?",
+          "a": "You can delete your account at any time in settings. After deletion, all your data will be permanently erased from our servers within 30 days."
+        }
+      }
     }
   },
   "auth": {
@@ -199,7 +277,6 @@
       "Dec"
     ]
   },
-
   "settings": {
     "title": "Settings",
     "profile": "Profile",
