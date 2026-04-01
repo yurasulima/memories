@@ -53,7 +53,6 @@
         {{ $t('landing.hero.title1') }}<br/>
         <span class="l-accent">{{ $t('landing.hero.title2') }}</span>
       </h1>
-      <p class="l-subtitle">{{ $t('landing.hero.subtitle') }}</p>
       <p class="l-desc">{{ $t('landing.hero.desc') }}</p>
       <div class="l-hero-btns">
         <router-link to="/app" class="btn-accent" style="font-size:15px;padding:14px 28px;">
@@ -259,6 +258,9 @@
         <span class="l-logo-text" style="font-size:14px;">Memories</span>
       </div>
       <nav class="l-footer-nav">
+
+        <router-link to="/privacy">Privacy Policy</router-link>
+        <router-link to="/terms">Terms</router-link>
         <a href="#features" @click.prevent="scrollTo('features')">{{ $t('nav.features') }}</a>
         <a href="#privacy"  @click.prevent="scrollTo('privacy')">{{ $t('landing.nav.privacy') }}</a>
         <a href="#faq"      @click.prevent="scrollTo('faq')">{{ $t('landing.nav.faq') }}</a>

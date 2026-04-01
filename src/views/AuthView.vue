@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { useGroupsStore } from '@/stores/group'
-import type { MemoriesRegisterRequest } from '@/api/models'
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useI18n} from 'vue-i18n'
+import {useAuthStore} from '@/stores/auth'
+import {useGroupsStore} from '@/stores/group'
+import type {MemoriesRegisterRequest} from '@/api/models'
 import IconHeart from '../components/icons/IconHeart.vue'
 import IconEye from '../components/icons/IconEye.vue'
 import IconEyeOff from '../components/icons/IconEyeOff.vue'
-import type { AxiosError } from 'axios'
+import type {AxiosError} from 'axios'
 
 type Tab = 'login' | 'register'
 
@@ -19,7 +19,7 @@ interface AuthForm {
   password: string
 }
 
-const { t } = useI18n()
+const {t} = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const groupsStore = useGroupsStore()
@@ -77,13 +77,29 @@ const loginDemo = async (): Promise<void> => {
     loading.value = false
   }
 }
+import {GoogleLogin} from 'vue3-google-login'
+
+const handleGoogleLogin = async (response: any): Promise<void> => {
+  error.value = ''
+  loading.value = true
+  groupsStore.reset()
+  try {
+    await auth.loginWithGoogle(response.credential)
+    await router.push('/app')
+  } catch (e) {
+    const err = e as AxiosError<{ message?: string }>
+    error.value = err.response?.data?.message || t('auth.errors.default')
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-logo">
-        <IconHeart :size="32" :filled="true" />
+        <IconHeart :size="32" :filled="true"/>
         <h1>Memories</h1>
       </div>
 
@@ -95,23 +111,23 @@ const loginDemo = async (): Promise<void> => {
       <form @submit.prevent="submit" class="auth-form">
         <div v-if="tab === 'register'" class="field">
           <label>{{ $t('auth.fullName') }}</label>
-          <input v-model="form.fullName" type="text" :placeholder="$t('auth.fullNamePlaceholder')" required />
+          <input v-model="form.fullName" type="text" :placeholder="$t('auth.fullNamePlaceholder')" required/>
         </div>
         <div v-if="tab === 'register'" class="field">
           <label>{{ $t('auth.username') }}</label>
-          <input v-model="form.username" type="text" placeholder="username" required />
+          <input v-model="form.username" type="text" placeholder="username" required/>
         </div>
         <div class="field">
           <label>{{ $t('auth.email') }}</label>
-          <input v-model="form.email" type="email" placeholder="you@example.com" required />
+          <input v-model="form.email" type="email" placeholder="you@example.com" required/>
         </div>
         <div class="field">
           <label>{{ $t('auth.password') }}</label>
           <div class="password-wrap">
-            <input v-model="form.password" :type="showPass ? 'text' : 'password'" placeholder="••••••••" required />
+            <input v-model="form.password" :type="showPass ? 'text' : 'password'" placeholder="••••••••" required/>
             <button type="button" class="eye-btn" @click="showPass = !showPass">
-              <IconEye v-if="!showPass" :size="18" />
-              <IconEyeOff v-else :size="18" />
+              <IconEye v-if="!showPass" :size="18"/>
+              <IconEyeOff v-else :size="18"/>
             </button>
           </div>
         </div>
@@ -129,6 +145,18 @@ const loginDemo = async (): Promise<void> => {
           <span v-if="loading">{{ $t('auth.demoLoading') }}</span>
           <span v-else>{{ $t('auth.demoLogin') }}</span>
         </button>
+
+        <div class="divider"><span>{{ $t('auth.or') }}</span></div>
+
+        <GoogleLogin
+            :callback="handleGoogleLogin"
+            :button-config="{
+              theme: 'outline',
+              size: 'large',
+              width: '100%',
+              text: 'continue_with'
+            }"
+        />
       </form>
     </div>
   </div>
@@ -222,10 +250,18 @@ const loginDemo = async (): Promise<void> => {
   transition: border-color 0.2s;
 }
 
-.field input:focus { border-color: var(--accent); }
+.field input:focus {
+  border-color: var(--accent);
+}
 
-.password-wrap { position: relative; }
-.password-wrap input { width: 100%; padding-right: 42px; }
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  width: 100%;
+  padding-right: 42px;
+}
 
 .eye-btn {
   position: absolute;
@@ -254,8 +290,13 @@ const loginDemo = async (): Promise<void> => {
   transition: background 0.2s, opacity 0.2s;
 }
 
-.submit-btn:hover:not(:disabled) { background: var(--accent-hover); }
-.submit-btn:disabled { opacity: 0.6; }
+.submit-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+}
 
 .divider {
   display: flex;
@@ -284,6 +325,11 @@ const loginDemo = async (): Promise<void> => {
   transition: background 0.2s, opacity 0.2s;
 }
 
-.demo-btn:hover:not(:disabled) { background: var(--border); }
-.demo-btn:disabled { opacity: 0.6; }
+.demo-btn:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.demo-btn:disabled {
+  opacity: 0.6;
+}
 </style>

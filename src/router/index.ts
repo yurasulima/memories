@@ -10,7 +10,18 @@ const router = createRouter({
       component: () => import('../views/AuthView.vue'),
       meta: { public: true }
     },
-
+    {
+      path: '/privacy',
+      name: 'privacy',
+      meta: { public: true },
+      component: () => import('../views/PrivacyView.vue')
+    },
+    {
+      path: '/terms',
+      name: 'terms',
+      meta: { public: true },
+      component: () => import('../views/TermsView.vue')
+    },
     { path: '/', name: 'landing', meta: { public: true }, component: () => import('../views/LandingView.vue') },
 
     {

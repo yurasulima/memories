@@ -20,5 +20,10 @@ export const authApi = {
   register: async (data: MemoriesRegisterRequest): Promise<MemoriesAuthResponse> => {
     const response = await api.post<MemoriesAuthResponse>('/memories/auth/register', data)
     return response.data
-  }
+  },
+  googleLogin: async (idToken: string): Promise<MemoriesAuthResponse> => {
+    const response = await api.post<MemoriesAuthResponse>('/memories/auth/google', { idToken })
+    return response.data
+  },
+
 }

@@ -35,6 +35,12 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('lastGroupId')
   }
+  const loginWithGoogle = async (idToken: string): Promise<void> => {
+    const response = await authApi.googleLogin(idToken)
+    token.value = response.token
+    user.value = response.user
+    localStorage.setItem('auth_token', response.token)
+  }
 
-  return { token, user, isAuthenticated, login, register, fetchMe, logout }
+  return { token, user, isAuthenticated, login, register, fetchMe, logout, loginWithGoogle }
 })
