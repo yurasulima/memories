@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {ref} from 'vue'
-import {useRouter} from 'vue-router'
-import {useI18n} from 'vue-i18n'
-import {useAuthStore} from '@/stores/auth'
-import {useGroupsStore} from '@/stores/group'
-import type {MemoriesRegisterRequest} from '@/api/models'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/auth'
+import { useGroupsStore } from '@/stores/group'
+import type { MemoriesRegisterRequest } from '@/api/models'
 import IconHeart from '../components/icons/IconHeart.vue'
 import IconEye from '../components/icons/IconEye.vue'
 import IconEyeOff from '../components/icons/IconEyeOff.vue'
-import type {AxiosError} from 'axios'
+import type { AxiosError } from 'axios'
 import { googleSdkLoaded } from 'vue3-google-login'
 
 type Tab = 'login' | 'register'
@@ -20,7 +20,7 @@ interface AuthForm {
   password: string
 }
 
-const {t} = useI18n()
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const groupsStore = useGroupsStore()
@@ -39,6 +39,8 @@ const form = ref<AuthForm>({
 
 const DEMO_EMAIL = 'demo@memories.app'
 const DEMO_PASSWORD = 'demo1234'
+
+const CLIENT_ID = '280444808440-eho58j22h1eilcp4es7ec11hpr9oavc4.apps.googleusercontent.com'
 
 const submit = async (): Promise<void> => {
   error.value = ''
@@ -65,6 +67,8 @@ const submit = async (): Promise<void> => {
   }
 }
 
+// ────────────────────────────────
+// Demo логін
 const loginDemo = async (): Promise<void> => {
   error.value = ''
   loading.value = true
@@ -79,9 +83,12 @@ const loginDemo = async (): Promise<void> => {
   }
 }
 
-const loginWithGoogle = (): void => {
+// ────────────────────────────────
+// Google One Tap ініціалізація один раз
+onMounted(() => {
   googleSdkLoaded((google) => {
     google.accounts.id.initialize({
+      client_id: CLIENT_ID,
       callback: async (response: any) => {
         error.value = ''
         loading.value = true
@@ -97,6 +104,13 @@ const loginWithGoogle = (): void => {
         }
       }
     })
+  })
+})
+
+// ────────────────────────────────
+// Кнопка Google просто показує One Tap
+const loginWithGoogle = (): void => {
+  googleSdkLoaded((google) => {
     google.accounts.id.prompt()
   })
 }
