@@ -25,5 +25,10 @@ export const authApi = {
     const response = await api.post<MemoriesAuthResponse>('/memories/auth/google', { idToken })
     return response.data
   },
+  changePassword: async (  newPassword: string): Promise<void> => {
+    await api.patch('/memories/auth/change-password', {
 
+      password: newPassword,
+    })
+  },
 }

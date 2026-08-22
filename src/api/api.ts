@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from 'axios'
 
-export const BASE_URL = 'https://api.mblueberry.space'
+export const BASE_URL = 'https://api.dangerous.pp.ua'
 
 
 export const mediaUrl = (url: string): string =>

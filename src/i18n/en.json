@@ -291,6 +291,11 @@
     "aboutText2": "If you enjoy the project — you can support its development ❤️",
     "support": "Support (Monobank)",
     "telegram": "Telegram: ImMurMurCat",
+    "changePassword": "Change Password",
+    "newPassword": "New password",
+    "savePassword": "Save password",
+    "passwordChanged": "Password changed successfully",
+    "passwordError": "Something went wrong. Please try again",
     "themes": {
       "white": "White",
       "pastel": "Pastel",

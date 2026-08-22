@@ -147,7 +147,7 @@
         <p class="legal-p">Questions about these Terms of Service? Reach out to us:</p>
         <div class="legal-contact">
           <svg viewBox="0 0 22 22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 11,13 0,6"/></svg>
-          <a href="mailto:legal@mblueberry.space" class="legal-link">legal@mblueberry.space</a>
+          <a href="mailto:legal@dangerous.pp.ua" class="legal-link">legal@dangerous.pp.ua</a>
         </div>
       </div>
 

@@ -1,3 +1,115 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { setLocale, availableLocales } from '@/i18n'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
+import { useGroupsStore } from '@/stores/group'
+import IconLogout from '../components/icons/IconLogout.vue'
+import { authApi } from '@/api/auth'
+
+
+const newPassword     = ref('')
+const passwordLoading = ref(false)
+const passwordError   = ref('')
+const passwordSuccess = ref(false)
+
+const submitChangePassword = async () => {
+  passwordError.value   = ''
+  passwordSuccess.value = false
+  passwordLoading.value = true
+  try {
+    await authApi.changePassword(  newPassword.value)
+    passwordSuccess.value = true
+
+    newPassword.value = ''
+  } catch (e: any) {
+    passwordError.value = e?.response?.status === 403
+        ? t('settings.wrongPassword')
+        : t('settings.passwordError')
+  } finally {
+    passwordLoading.value = false
+  }
+}
+interface ThemeOption {
+  value: string
+  label: string
+}
+
+const { t, locale } = useI18n()
+const currentLocale = computed(() => locale.value)
+const router = useRouter()
+const auth = useAuthStore()
+const themeStore = useThemeStore()
+const groupsStore = useGroupsStore()
+
+// ── Dropdown state ────────────────────────────────────────────────────────────
+const themeOpen = ref(false)
+const langOpen  = ref(false)
+const themeDropRef = ref<HTMLElement | null>(null)
+const langDropRef  = ref<HTMLElement | null>(null)
+
+const closeOnOutside = (e: MouseEvent) => {
+  if (themeDropRef.value && !themeDropRef.value.contains(e.target as Node)) themeOpen.value = false
+  if (langDropRef.value  && !langDropRef.value.contains(e.target as Node))  langOpen.value  = false
+}
+onMounted(async () => {
+  document.addEventListener('click', closeOnOutside, true)
+  if (!auth.user) {
+    profileLoading.value = true
+    try { await auth.fetchMe() } finally { profileLoading.value = false }
+  }
+})
+onUnmounted(() => document.removeEventListener('click', closeOnOutside, true))
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+const profileLoading = ref<boolean>(false)
+const initials = computed<string>(() => {
+  const name = auth.user?.fullName || auth.user?.username || ''
+  return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+})
+
+// ── Themes ────────────────────────────────────────────────────────────────────
+const themes = computed<ThemeOption[]>(() => [
+  { value: 'white',       label: t('settings.themes.white') },
+  { value: 'pastel',      label: t('settings.themes.pastel') },
+  { value: 'rose',        label: t('settings.themes.rose') },
+  { value: 'mint',        label: t('settings.themes.mint') },
+  { value: 'sky',         label: t('settings.themes.sky') },
+  { value: 'dark',        label: t('settings.themes.dark') },
+  { value: 'dark-pastel', label: t('settings.themes.darkPastel') },
+  { value: 'ocean',       label: t('settings.themes.ocean') },
+  { value: 'forest',      label: t('settings.themes.forest') },
+  { value: 'sunset',      label: t('settings.themes.sunset') },
+  { value: 'midnight',    label: t('settings.themes.midnight') },
+  { value: 'amoled',      label: t('settings.themes.amoled') },
+])
+const currentThemeLabel = computed(() =>
+    themes.value.find(th => th.value === themeStore.theme)?.label ?? themeStore.theme
+)
+const selectTheme = (val: string) => {
+  themeStore.setTheme(val as any)
+  themeOpen.value = false
+}
+
+// ── Language ──────────────────────────────────────────────────────────────────
+const currentLangObj = computed(() =>
+    availableLocales.find(l => l.code === currentLocale.value)
+)
+const selectLang = (code: string) => {
+  setLocale(code)
+  langOpen.value = false
+}
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+const logout = (): void => {
+  groupsStore.reset()
+  auth.logout()
+  router.push('/auth')
+}
+</script>
+
 <template>
   <div class="settings-view">
     <header class="page-header">
@@ -89,6 +201,31 @@
       </div>
 
 
+      <!-- Зміна пароля -->
+      <div class="section-card">
+        <h2>{{ $t('settings.changePassword') }}</h2>
+        <div class="password-fields">
+
+          <input
+              v-model="newPassword"
+              type="password"
+              :placeholder="$t('settings.newPassword')"
+              class="settings-input"
+              :disabled="passwordLoading"
+          />
+          <p v-if="passwordError" class="password-error">{{ passwordError }}</p>
+          <p v-if="passwordSuccess" class="password-success">{{ $t('settings.passwordChanged') }}</p>
+          <button
+              class="save-password-btn"
+              :disabled="passwordLoading || !newPassword"
+              @click="submitChangePassword"
+          >
+            <span v-if="passwordLoading" class="btn-spinner" />
+            <span v-else>{{ $t('settings.savePassword') }}</span>
+          </button>
+        </div>
+      </div>
+
       <button class="logout-btn" @click="logout">
         <IconLogout :size="18" />
         <span>{{ $t('settings.logout') }}</span>
@@ -115,95 +252,40 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { setLocale, availableLocales } from '../i18n/index'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useThemeStore } from '../stores/theme'
-import { useGroupsStore } from '../stores/group'
-import IconLogout from '../components/icons/IconLogout.vue'
-
-interface ThemeOption {
-  value: string
-  label: string
-}
-
-const { t, locale } = useI18n()
-const currentLocale = computed(() => locale.value)
-const router = useRouter()
-const auth = useAuthStore()
-const themeStore = useThemeStore()
-const groupsStore = useGroupsStore()
-
-// ── Dropdown state ────────────────────────────────────────────────────────────
-const themeOpen = ref(false)
-const langOpen  = ref(false)
-const themeDropRef = ref<HTMLElement | null>(null)
-const langDropRef  = ref<HTMLElement | null>(null)
-
-const closeOnOutside = (e: MouseEvent) => {
-  if (themeDropRef.value && !themeDropRef.value.contains(e.target as Node)) themeOpen.value = false
-  if (langDropRef.value  && !langDropRef.value.contains(e.target as Node))  langOpen.value  = false
-}
-onMounted(async () => {
-  document.addEventListener('click', closeOnOutside, true)
-  if (!auth.user) {
-    profileLoading.value = true
-    try { await auth.fetchMe() } finally { profileLoading.value = false }
-  }
-})
-onUnmounted(() => document.removeEventListener('click', closeOnOutside, true))
-
-// ── Profile ───────────────────────────────────────────────────────────────────
-const profileLoading = ref<boolean>(false)
-const initials = computed<string>(() => {
-  const name = auth.user?.fullName || auth.user?.username || ''
-  return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-})
-
-// ── Themes ────────────────────────────────────────────────────────────────────
-const themes = computed<ThemeOption[]>(() => [
-  { value: 'white',       label: t('settings.themes.white') },
-  { value: 'pastel',      label: t('settings.themes.pastel') },
-  { value: 'rose',        label: t('settings.themes.rose') },
-  { value: 'mint',        label: t('settings.themes.mint') },
-  { value: 'sky',         label: t('settings.themes.sky') },
-  { value: 'dark',        label: t('settings.themes.dark') },
-  { value: 'dark-pastel', label: t('settings.themes.darkPastel') },
-  { value: 'ocean',       label: t('settings.themes.ocean') },
-  { value: 'forest',      label: t('settings.themes.forest') },
-  { value: 'sunset',      label: t('settings.themes.sunset') },
-  { value: 'midnight',    label: t('settings.themes.midnight') },
-  { value: 'amoled',      label: t('settings.themes.amoled') },
-])
-const currentThemeLabel = computed(() =>
-    themes.value.find(th => th.value === themeStore.theme)?.label ?? themeStore.theme
-)
-const selectTheme = (val: string) => {
-  themeStore.setTheme(val as any)
-  themeOpen.value = false
-}
-
-// ── Language ──────────────────────────────────────────────────────────────────
-const currentLangObj = computed(() =>
-    availableLocales.find(l => l.code === currentLocale.value)
-)
-const selectLang = (code: string) => {
-  setLocale(code)
-  langOpen.value = false
-}
-
-// ── Logout ────────────────────────────────────────────────────────────────────
-const logout = (): void => {
-  groupsStore.reset()
-  auth.logout()
-  router.push('/auth')
-}
-</script>
-
 <style scoped>
+
+
+.password-fields { display: flex; flex-direction: column; gap: 10px; }
+
+.settings-input {
+  background: var(--bg-secondary); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 12px 14px;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  transition: border-color 0.2s; outline: none;
+}
+.settings-input:focus { border-color: var(--accent); }
+.settings-input:disabled { opacity: 0.5; }
+
+.password-error   { font-size: 13px; color: #e05555; padding-left: 4px; }
+.password-success { font-size: 13px; color: #4caf50; padding-left: 4px; }
+
+.save-password-btn {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: white;
+  border-radius: 14px; padding: 13px;
+  font-size: 15px; font-weight: 600; transition: opacity 0.2s;
+}
+.save-password-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.save-password-btn:not(:disabled):hover { opacity: 0.88; }
+
+.btn-spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
 .settings-view { padding-bottom: 20px; }
 
 .page-header {
@@ -262,7 +344,7 @@ const logout = (): void => {
 .dropdown-trigger {
   width: 100%;
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--bg-secondary); border: 1.5px solid var(--border);
+  background: var(--bg-secondary); border: 2px solid var(--border);
   border-radius: 14px; padding: 12px 14px;
   font-size: 14px; font-weight: 600; color: var(--text);
   transition: border-color 0.2s;
@@ -302,7 +384,7 @@ const logout = (): void => {
 /* ── Theme dot ── */
 .theme-dot {
   width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
-  border: 1.5px solid rgba(0,0,0,0.1);
+  border: 2px solid rgba(0,0,0,0.1);
 }
 .theme-dot.white       { background: linear-gradient(135deg, #ffffff 50%, #f0f0f0); }
 .theme-dot.pastel      { background: linear-gradient(135deg, #fff5f8 50%, #ffd6e7); }

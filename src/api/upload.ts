@@ -4,7 +4,7 @@ import type { UploadImageResponse } from './models'
 import api from "@/api/api";
 
 const uploadClient = axios.create({
-    baseURL: 'https://api.mblueberry.space',
+    baseURL: 'https://api.dangerous.pp.ua',
     headers: { 'Content-Type': 'multipart/form-data' }
 })
 
@@ -17,7 +17,7 @@ export const uploadApi = {
         formData.append('file', file, safeName)
 
         const response = await axios.post<UploadImageResponse>(
-            `https://api.mblueberry.space/upload/image`,
+            `https://api.dangerous.pp.ua/upload/image`,
             formData,
             {
                 params: { folder: folder.trim().replace(/\/$/, '') },
